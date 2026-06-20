@@ -193,23 +193,50 @@ def add_kspace_noise(kspace: np.ndarray, snr_db: float,
 def synthesise(S0: np.ndarray, T2s: np.ndarray, TEs: list[float],
                accel: int = 4, cf: float = 0.08,
                snr_db: float = 30.0, mask_seed: int = 42,
-               noise_seed: int = 0):
+               noise_seed: int = 0,
+               # ── mismatch flags (default = no mismatch, identical to original) ──
+               biexp_f: float = 0.0,
+               biexp_T2s_short: float = 10.0,
+               offres_map: np.ndarray | None = None):
     """
     Build everything needed for training + evaluation from the phantom.
 
     Returns a dict with:
-      echoes_full  [n_echoes, H, W] float32  — ground-truth magnitude echoes
-      kspace_full  [n_echoes, H, W] complex64
+      echoes_full  [n_echoes, H, W] float32  — magnitude echoes for T2*_eff reference
+      kspace_full  [n_echoes, H, W] complex64 — true k-space (complex if off-resonance)
       kspace_under [n_echoes, H, W] complex64
       mask_1d      [W] float32
       mask_2d      [H, W] float32
       zf_mag       [n_echoes, H, W] float32  — |ifft2c(kspace_under)|
+
+    Mismatch parameters (GROUND-TRUTH only — network model stays mono-exponential):
+      biexp_f        : short-compartment fraction ∈ [0,1]. 0 = pure mono-exp (original).
+                       Signal: S0*(f*exp(-TE/T2s_short) + (1-f)*exp(-TE/T2s))
+      biexp_T2s_short: T2* of the short compartment in ms (default 10 ms).
+      offres_map     : [H,W] float, spatially-varying off-resonance in Hz. None = no B0.
+                       Adds phase: echo *= exp(i*2π*df(x,y)*TE) before FFT.
     """
     H, W = S0.shape
     rng = np.random.default_rng(noise_seed)
 
-    echoes_full  = np.stack([S0 * np.exp(-te / T2s) for te in TEs], axis=0).astype(np.float32)
-    kspace_full  = np.stack([fft2c_np(e.astype(np.complex64)) for e in echoes_full], axis=0)
+    # ── magnitude echoes (used for T2*_eff reference and as ZF network input) ──
+    if biexp_f > 0.0:
+        echoes_full = np.stack([
+            S0 * (biexp_f * np.exp(-te / biexp_T2s_short) + (1.0 - biexp_f) * np.exp(-te / T2s))
+            for te in TEs
+        ], axis=0).astype(np.float32)
+    else:
+        echoes_full = np.stack([S0 * np.exp(-te / T2s) for te in TEs], axis=0).astype(np.float32)
+
+    # ── k-space: add off-resonance phase before FFT if requested ──────────────
+    if offres_map is not None:
+        complex_echoes = np.stack([
+            echoes_full[ei] * np.exp(1j * 2.0 * np.pi * offres_map * te)
+            for ei, te in enumerate(TEs)
+        ], axis=0).astype(np.complex64)
+        kspace_full = np.stack([fft2c_np(ce) for ce in complex_echoes], axis=0)
+    else:
+        kspace_full = np.stack([fft2c_np(e.astype(np.complex64)) for e in echoes_full], axis=0)
 
     mask_1d = make_mask_1d(W, accel, cf, seed=mask_seed)
     mask_2d = np.broadcast_to(mask_1d[None, :], (H, W)).copy().astype(np.float32)
