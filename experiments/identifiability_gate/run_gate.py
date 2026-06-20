@@ -231,7 +231,7 @@ def synthesise(S0: np.ndarray, T2s: np.ndarray, TEs: list[float],
     # ── k-space: add off-resonance phase before FFT if requested ──────────────
     if offres_map is not None:
         complex_echoes = np.stack([
-            echoes_full[ei] * np.exp(1j * 2.0 * np.pi * offres_map * te)
+            echoes_full[ei] * np.exp(1j * 2.0 * np.pi * offres_map * (te / 1000.0))
             for ei, te in enumerate(TEs)
         ], axis=0).astype(np.complex64)
         kspace_full = np.stack([fft2c_np(ce) for ce in complex_echoes], axis=0)
