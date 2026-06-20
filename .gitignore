@@ -17,8 +17,8 @@ logs/
 runs/
 wandb/
 
-# Data
-data/
+# Data directories (raw dataset at repo root only)
+/data/
 *.h5
 *.hdf5
 *.nii
