@@ -1,0 +1,43 @@
+{
+  "experiment": "attribution-v2",
+  "epochs": 300,
+  "snr_db": 30.0,
+  "seeds": 3,
+  "phantom": "128x128",
+  "gt_t2_range_ms": [25, 75],
+  "df_levels_hz": [0, 20, 50, 100],
+  "control_t2_med_ms": 1.43,
+  "results": {
+    "df_0": {
+      "2p-complex":  {"t2_med": 1.43,  "t2_p95": 11.35, "mean_loss": 0.00101, "xseed_ms": 0.861},
+      "3p-complex":  {"t2_med": 0.98,  "t2_p95":  9.89, "mean_loss": 0.00129, "xseed_ms": 1.104},
+      "2p-mag":      {"t2_med": 1.56,  "t2_p95": 18.91, "mean_loss": 0.00918, "xseed_ms": 28.491}
+    },
+    "df_20": {
+      "2p-complex":  {"t2_med": 12.47, "t2_p95": 45.72, "mean_loss": 0.29022, "xseed_ms": 1.654},
+      "3p-complex":  {"t2_med": 1.14,  "t2_p95": 30.48, "mean_loss": 0.00337, "xseed_ms": 1.448},
+      "2p-mag":      {"t2_med": 24.60, "t2_p95": 49.88, "mean_loss": 0.15805, "xseed_ms": 10.308},
+      "2p-complex-buggy": {"t2_med": 41.05, "t2_p95": 61.45, "mean_loss": 0.99967, "xseed_ms": 2.367}
+    },
+    "df_50": {
+      "2p-complex":  {"t2_med": 37.70, "t2_p95": 52.89, "mean_loss": 0.54338, "xseed_ms": 1.380},
+      "3p-complex":  {"t2_med": 3.95,  "t2_p95": 37.72, "mean_loss": 0.00756, "xseed_ms": 0.758},
+      "2p-mag":      {"t2_med": 47.24, "t2_p95": 63.08, "mean_loss": 0.30986, "xseed_ms": 6.058},
+      "2p-complex-buggy": {"t2_med": 41.79, "t2_p95": 61.73, "mean_loss": 1.00133, "xseed_ms": 2.336}
+    },
+    "df_100": {
+      "2p-complex":  {"t2_med": 47.80, "t2_p95": 65.33, "mean_loss": 0.72900, "xseed_ms": 1.049},
+      "3p-complex":  {"t2_med": 5.58,  "t2_p95": 36.78, "mean_loss": 0.01144, "xseed_ms": 0.812},
+      "2p-mag":      {"t2_med": 46.09, "t2_p95": 66.61, "mean_loss": 0.39212, "xseed_ms": 2.782},
+      "2p-complex-buggy": {"t2_med": 38.40, "t2_p95": 59.13, "mean_loss": 0.99861, "xseed_ms": 3.412}
+    }
+  },
+  "regression_anchor": {
+    "description": "buggy data (offres_map*1000) at df=20 Hz reproduces T2*~41 ms from run_mismatch.py",
+    "t2_med_ms": 41.05,
+    "confirmed": true
+  },
+  "verdict": "COMPLETION NECESSARY (information loss)",
+  "verdict_detail": "Both cond(1) 2p-complex and cond(3) 2p-mag show T2* degradation at physical df. Spatially-varying Df(x,y) distorts |FFT(S0*exp(-TE/T2*)*exp(i*phi(x,y)))| — the magnitude spectrum is corrupted regardless of loss function. Adding Df DOF [cond 2] is the only clean fix.",
+  "mechanism_probe": "2p-mag (cond 3) ALSO fails at df=20 Hz (T2*=24.60 ms) and df=50 Hz (47.24 ms), ruling out the MECHANISM verdict. The T2* information itself is lost in undersampled k-space magnitudes under spatially-varying phase — not just the loss mismatch."
+}
