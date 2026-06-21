@@ -1,0 +1,241 @@
+
+Device: mps
+Pretrain epochs: 80  |  Recon epochs: 200
+Phantom: 128×128, 5 echoes, 4× accel, SNR=30.0 dB
+
+Building map dataset (file-level pretrain/test split)…
+  Pretrain files: ['file1000031.h5', 'file1000033.h5', 'file1000041.h5', 'file1000052.h5', 'file1000071.h5', 'file1000073.h5', 'file1000107.h5', 'file1000108.h5']
+  Test files:     ['file1000126.h5', 'file1000153.h5']
+  Pretrain maps: 64,  Test maps: 16
+
+════════════════════════════════════════════════════════════
+STAGE A — JEPA pre-training
+════════════════════════════════════════════════════════════
+  [JEPA pretrain] ep   16/80  pred_loss=13.65141  vic=4.0767
+  [JEPA pretrain] ep   32/80  pred_loss=9.57649  vic=3.6752
+  [JEPA pretrain] ep   48/80  pred_loss=5.86691  vic=3.1411
+  [JEPA pretrain] ep   64/80  pred_loss=6.02394  vic=2.9083
+  [JEPA pretrain] ep   80/80  pred_loss=5.22971  vic=2.7552
+  Stage A complete.  Final loss: 5.22971
+
+════════════════════════════════════════════════════════════
+SANITY GATE
+════════════════════════════════════════════════════════════
+  Scoring real maps… done. Blurred… done. Noise… done.
+  Surprise: real=7.31416  blurred=7.51746 (+3%)  noise=16.28414 (+123%)
+  SANITY GATE: PASS  (need: blur>real AND noise>real, gap ≥10%/20%)
+
+════════════════════════════════════════════════════════════
+STAGE B+C — Reconstruction + texture fidelity
+════════════════════════════════════════════════════════════
+
+  ── Test map 1/4 (file1000126.h5, sl=6, seed=2) ──
+  Baselines: full=0.00 ms  ZF=6.95 ms
+    [JEPA m0 s0] ep   40/200  dc=0.12160  jepa=17.70723
+    [JEPA m0 s0] ep   80/200  dc=0.09322  jepa=4.96414
+    [JEPA m0 s0] ep  120/200  dc=0.05448  jepa=14.61519
+    [JEPA m0 s0] ep  160/200  dc=0.05361  jepa=7.14047
+    [JEPA m0 s0] ep  200/200  dc=0.05140  jepa=11.77077
+    [CNN  m0 s0] ep   40/200  loss=0.03328
+    [CNN  m0 s0] ep   80/200  loss=0.01322
+    [CNN  m0 s0] ep  120/200  loss=0.01140
+    [CNN  m0 s0] ep  160/200  loss=0.01021
+    [CNN  m0 s0] ep  200/200  loss=0.00981
+    [JEPA m0 s1] ep   40/200  dc=0.06190  jepa=4.33121
+    [JEPA m0 s1] ep   80/200  dc=0.08960  jepa=15.46574
+    [JEPA m0 s1] ep  120/200  dc=0.06633  jepa=14.03047
+    [JEPA m0 s1] ep  160/200  dc=0.06878  jepa=6.80584
+    [JEPA m0 s1] ep  200/200  dc=0.06590  jepa=5.48741
+    [CNN  m0 s1] ep   40/200  loss=0.02064
+    [CNN  m0 s1] ep   80/200  loss=0.01396
+    [CNN  m0 s1] ep  120/200  loss=0.01060
+    [CNN  m0 s1] ep  160/200  loss=0.00953
+    [CNN  m0 s1] ep  200/200  loss=0.00926
+    [JEPA m0 s2] ep   40/200  dc=0.16235  jepa=6.07892
+    [JEPA m0 s2] ep   80/200  dc=0.09466  jepa=28.28870
+    [JEPA m0 s2] ep  120/200  dc=0.07243  jepa=4.94774
+    [JEPA m0 s2] ep  160/200  dc=0.06093  jepa=7.30305
+    [JEPA m0 s2] ep  200/200  dc=0.05805  jepa=2.81442
+    [CNN  m0 s2] ep   40/200  loss=0.02187
+    [CNN  m0 s2] ep   80/200  loss=0.01471
+    [CNN  m0 s2] ep  120/200  loss=0.01022
+    [CNN  m0 s2] ep  160/200  loss=0.00896
+    [CNN  m0 s2] ep  200/200  loss=0.00873
+
+  Map 1 results:
+    JEPA prior: T2*=7.44 ms  corr=0.2015  halluc=30.1528  dc_loss=0.05845
+    CNN prior:  T2*=5.29 ms  corr=0.4436  halluc=8.0515  dc_loss=0.00927
+    ZF floor:   T2*=6.95 ms  corr=0.1157  halluc=1.1062
+    Full UB:    T2*=0.00 ms  corr=1.0000  halluc=0.0000
+
+    Hallucination detection check:
+      JEPA dc_loss=0.05845  CNN dc_loss=0.00927
+      (if dc_loss is similar but halluc_frac differs → loss does NOT detect it)
+  → saved jepa_recon_test_map_1.png
+
+  ── Test map 2/4 (file1000126.h5, sl=6, seed=3) ──
+  Baselines: full=0.00 ms  ZF=7.11 ms
+    [JEPA m1 s0] ep   40/200  dc=0.40566  jepa=9.24597
+    [JEPA m1 s0] ep   80/200  dc=0.31166  jepa=5.07986
+    [JEPA m1 s0] ep  120/200  dc=0.04098  jepa=15.05653
+    [JEPA m1 s0] ep  160/200  dc=0.05077  jepa=4.50072
+    [JEPA m1 s0] ep  200/200  dc=0.05157  jepa=14.23705
+    [CNN  m1 s0] ep   40/200  loss=0.03083
+    [CNN  m1 s0] ep   80/200  loss=0.01554
+    [CNN  m1 s0] ep  120/200  loss=0.01068
+    [CNN  m1 s0] ep  160/200  loss=0.00798
+    [CNN  m1 s0] ep  200/200  loss=0.00735
+    [JEPA m1 s1] ep   40/200  dc=0.05554  jepa=20.82537
+    [JEPA m1 s1] ep   80/200  dc=0.05876  jepa=16.02814
+    [JEPA m1 s1] ep  120/200  dc=0.06455  jepa=12.86521
+    [JEPA m1 s1] ep  160/200  dc=0.06180  jepa=9.52713
+    [JEPA m1 s1] ep  200/200  dc=0.06104  jepa=9.73986
+    [CNN  m1 s1] ep   40/200  loss=0.02203
+    [CNN  m1 s1] ep   80/200  loss=0.01446
+    [CNN  m1 s1] ep  120/200  loss=0.01126
+    [CNN  m1 s1] ep  160/200  loss=0.00957
+    [CNN  m1 s1] ep  200/200  loss=0.00906
+    [JEPA m1 s2] ep   40/200  dc=0.08205  jepa=7.11625
+    [JEPA m1 s2] ep   80/200  dc=0.05070  jepa=3.75895
+    [JEPA m1 s2] ep  120/200  dc=0.06530  jepa=11.38982
+    [JEPA m1 s2] ep  160/200  dc=0.05148  jepa=9.88494
+    [JEPA m1 s2] ep  200/200  dc=0.05329  jepa=8.08694
+    [CNN  m1 s2] ep   40/200  loss=0.02140
+    [CNN  m1 s2] ep   80/200  loss=0.02578
+    [CNN  m1 s2] ep  120/200  loss=0.01309
+    [CNN  m1 s2] ep  160/200  loss=0.01111
+    [CNN  m1 s2] ep  200/200  loss=0.01078
+
+  Map 2 results:
+    JEPA prior: T2*=7.08 ms  corr=0.4563  halluc=33.4675  dc_loss=0.05530
+    CNN prior:  T2*=5.17 ms  corr=0.4397  halluc=4.4987  dc_loss=0.00907
+    ZF floor:   T2*=7.11 ms  corr=0.1065  halluc=1.0861
+    Full UB:    T2*=0.00 ms  corr=1.0000  halluc=0.0000
+
+    Hallucination detection check:
+      JEPA dc_loss=0.05530  CNN dc_loss=0.00907
+      (if dc_loss is similar but halluc_frac differs → loss does NOT detect it)
+
+  ── Test map 3/4 (file1000126.h5, sl=12, seed=2) ──
+  Baselines: full=0.00 ms  ZF=9.32 ms
+    [JEPA m2 s0] ep   40/200  dc=0.15991  jepa=6.94062
+    [JEPA m2 s0] ep   80/200  dc=0.13061  jepa=10.55384
+    [JEPA m2 s0] ep  120/200  dc=0.08800  jepa=10.71716
+    [JEPA m2 s0] ep  160/200  dc=0.12590  jepa=16.12697
+    [JEPA m2 s0] ep  200/200  dc=0.11281  jepa=8.03339
+    [CNN  m2 s0] ep   40/200  loss=0.04111
+    [CNN  m2 s0] ep   80/200  loss=0.01602
+    [CNN  m2 s0] ep  120/200  loss=0.01038
+    [CNN  m2 s0] ep  160/200  loss=0.00707
+    [CNN  m2 s0] ep  200/200  loss=0.00631
+    [JEPA m2 s1] ep   40/200  dc=0.07664  jepa=4.96640
+    [JEPA m2 s1] ep   80/200  dc=0.10283  jepa=8.55202
+    [JEPA m2 s1] ep  120/200  dc=0.07887  jepa=10.71063
+    [JEPA m2 s1] ep  160/200  dc=0.11116  jepa=7.51483
+    [JEPA m2 s1] ep  200/200  dc=0.11379  jepa=4.14295
+    [CNN  m2 s1] ep   40/200  loss=0.02278
+    [CNN  m2 s1] ep   80/200  loss=0.01428
+    [CNN  m2 s1] ep  120/200  loss=0.01273
+    [CNN  m2 s1] ep  160/200  loss=0.01132
+    [CNN  m2 s1] ep  200/200  loss=0.01100
+    [JEPA m2 s2] ep   40/200  dc=0.10796  jepa=9.35585
+    [JEPA m2 s2] ep   80/200  dc=0.10527  jepa=7.58572
+    [JEPA m2 s2] ep  120/200  dc=0.10360  jepa=4.42167
+    [JEPA m2 s2] ep  160/200  dc=0.13923  jepa=16.71833
+    [JEPA m2 s2] ep  200/200  dc=0.13097  jepa=4.81994
+    [CNN  m2 s2] ep   40/200  loss=0.03082
+    [CNN  m2 s2] ep   80/200  loss=0.01652
+    [CNN  m2 s2] ep  120/200  loss=0.01517
+    [CNN  m2 s2] ep  160/200  loss=0.01271
+    [CNN  m2 s2] ep  200/200  loss=0.01221
+
+  Map 3 results:
+    JEPA prior: T2*=8.58 ms  corr=0.3371  halluc=16.0117  dc_loss=0.11919
+    CNN prior:  T2*=6.23 ms  corr=0.4687  halluc=7.6201  dc_loss=0.00984
+    ZF floor:   T2*=9.32 ms  corr=0.1071  halluc=1.1200
+    Full UB:    T2*=0.00 ms  corr=1.0000  halluc=0.0000
+
+    Hallucination detection check:
+      JEPA dc_loss=0.11919  CNN dc_loss=0.00984
+      (if dc_loss is similar but halluc_frac differs → loss does NOT detect it)
+
+  ── Test map 4/4 (file1000126.h5, sl=12, seed=3) ──
+  Baselines: full=0.00 ms  ZF=9.67 ms
+    [JEPA m3 s0] ep   40/200  dc=0.14745  jepa=9.66665
+    [JEPA m3 s0] ep   80/200  dc=0.10894  jepa=8.52480
+    [JEPA m3 s0] ep  120/200  dc=0.07324  jepa=10.10430
+    [JEPA m3 s0] ep  160/200  dc=0.11013  jepa=7.36011
+    [JEPA m3 s0] ep  200/200  dc=0.10447  jepa=4.86967
+    [CNN  m3 s0] ep   40/200  loss=0.03513
+    [CNN  m3 s0] ep   80/200  loss=0.01408
+    [CNN  m3 s0] ep  120/200  loss=0.00918
+    [CNN  m3 s0] ep  160/200  loss=0.00620
+    [CNN  m3 s0] ep  200/200  loss=0.00575
+    [JEPA m3 s1] ep   40/200  dc=0.08376  jepa=7.56747
+    [JEPA m3 s1] ep   80/200  dc=0.10350  jepa=7.00935
+    [JEPA m3 s1] ep  120/200  dc=0.13740  jepa=5.35759
+    [JEPA m3 s1] ep  160/200  dc=0.09290  jepa=10.01385
+    [JEPA m3 s1] ep  200/200  dc=0.07901  jepa=8.49685
+    [CNN  m3 s1] ep   40/200  loss=0.01839
+    [CNN  m3 s1] ep   80/200  loss=0.01314
+    [CNN  m3 s1] ep  120/200  loss=0.01022
+    [CNN  m3 s1] ep  160/200  loss=0.00885
+    [CNN  m3 s1] ep  200/200  loss=0.00844
+    [JEPA m3 s2] ep   40/200  dc=0.09412  jepa=10.71718
+    [JEPA m3 s2] ep   80/200  dc=0.08486  jepa=5.70666
+    [JEPA m3 s2] ep  120/200  dc=0.09171  jepa=4.03450
+    [JEPA m3 s2] ep  160/200  dc=0.09182  jepa=12.26166
+    [JEPA m3 s2] ep  200/200  dc=0.09216  jepa=3.28412
+    [CNN  m3 s2] ep   40/200  loss=0.02988
+    [CNN  m3 s2] ep   80/200  loss=0.01552
+    [CNN  m3 s2] ep  120/200  loss=0.01197
+    [CNN  m3 s2] ep  160/200  loss=0.01017
+    [CNN  m3 s2] ep  200/200  loss=0.00983
+
+  Map 4 results:
+    JEPA prior: T2*=7.37 ms  corr=0.2127  halluc=25.4156  dc_loss=0.09188
+    CNN prior:  T2*=6.01 ms  corr=0.4330  halluc=7.3296  dc_loss=0.00800
+    ZF floor:   T2*=9.67 ms  corr=0.0973  halluc=1.1397
+    Full UB:    T2*=0.00 ms  corr=1.0000  halluc=0.0000
+
+    Hallucination detection check:
+      JEPA dc_loss=0.09188  CNN dc_loss=0.00800
+      (if dc_loss is similar but halluc_frac differs → loss does NOT detect it)
+  → saved jepa_prior_summary.png
+
+════════════════════════════════════════════════════════════════════════════════════════════
+JEPA PRIOR — STAGE C RESULTS
+  Textured maps (held-out from pretraining), df=0 Hz, SNR=30 dB
+════════════════════════════════════════════════════════════════════════════════════════════
+  Method                   T2*med   T2*p95   DC-loss    Xseed   Unmeas-corr  NMSE(band)  Halluc-frac
+                             (ms)     (ms)    (norm)     (ms)   (Pearson r)              (inv/total)
+  ────────────────────────────────────────────────────────────────────────────────────────
+  Full-sample UB             0.00     0.00       nan      nan        1.0000      0.0000       0.0000
+  ZF analytical              8.26    34.30       nan      nan        0.1066      5.3359       1.1130
+  CNN-prior (3p)             5.67    20.50   0.00904    1.800        0.4462      0.8123       6.8750
+  JEPA-prior (3p)            7.62    31.38   0.08121    1.389        0.3019      0.9225      26.2619
+  ════════════════════════════════════════════════════════════════════════════════════════
+
+  REFERENCE (run_prior_vs_physics.py — same setup):
+    Piecewise-CNN (matched prior):  T2* med ≈  0.98 ms, ZF ≈  2.70 ms
+    Textured-CNN  (prior mismatch): T2* med ≈  7.63 ms, ZF ≈  8.02 ms
+    [CNN on textured removes only 5% of ZF error]
+
+  VERDICT ANALYSIS:
+    ZF floor (textured):       8.26 ms
+    CNN-prior (textured):      5.67 ms  (gap vs ZF: 2.59 ms)
+    JEPA-prior (textured):     7.62 ms  (gap vs ZF: 0.64 ms)
+    Hallucination fraction:    26.2619  (0=perfect, 1=all-invented)
+    Unmeas-band correlation:   0.3019  (1=perfect texture recovery)
+    Sanity gate:               PASS
+
+  VERDICT:
+    HALLUCINATES — JEPA prior does NOT improve whole-map T2* (7.62 ms vs 5.67 ms), but
+    unmeasured-band correlation is 0.302 and hallucination fraction is 26.262: the prior
+    invents plausible-but-false texture in the unmeasured k-space band. Data consistency
+    cannot detect hallucination (invented texture is data-consistent). JEPA prior is no
+    better than a generative model in the unmeasured band — the no-decoder bet fails;
+    honesty of fill requires data or a stronger prior.
+════════════════════════════════════════════════════════════════════════════════════════════
+
+Final verdict: HALLUCINATES
