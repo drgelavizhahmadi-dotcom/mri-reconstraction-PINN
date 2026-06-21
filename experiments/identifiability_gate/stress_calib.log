@@ -1,0 +1,279 @@
+
+Device: mps   R_CALIB=4   TRAIN_EPOCHS=100   N_MC=50
+
+Loading test maps …
+  16 maps
+
+────────────────────────────────────────────────────────────
+R = 2
+────────────────────────────────────────────────────────────
+    [R=2 le1000126.h5 sl6 s2] ep   25/100  loss=0.03176
+    [R=2 le1000126.h5 sl6 s2] ep   50/100  loss=0.02495
+    [R=2 le1000126.h5 sl6 s2] ep   75/100  loss=0.01877
+    [R=2 le1000126.h5 sl6 s2] ep  100/100  loss=0.01846
+    [R=2 le1000126.h5 sl6 s3] ep   25/100  loss=0.04462
+    [R=2 le1000126.h5 sl6 s3] ep   50/100  loss=0.02475
+    [R=2 le1000126.h5 sl6 s3] ep   75/100  loss=0.02128
+    [R=2 le1000126.h5 sl6 s3] ep  100/100  loss=0.02064
+    [R=2 le1000126.h5 sl12 s2] ep   25/100  loss=0.04950
+    [R=2 le1000126.h5 sl12 s2] ep   50/100  loss=0.02898
+    [R=2 le1000126.h5 sl12 s2] ep   75/100  loss=0.02174
+    [R=2 le1000126.h5 sl12 s2] ep  100/100  loss=0.02079
+    [R=2 le1000126.h5 sl12 s3] ep   25/100  loss=0.05644
+    [R=2 le1000126.h5 sl12 s3] ep   50/100  loss=0.02705
+    [R=2 le1000126.h5 sl12 s3] ep   75/100  loss=0.02093
+    [R=2 le1000126.h5 sl12 s3] ep  100/100  loss=0.02008
+    [R=2 le1000126.h5 sl19 s2] ep   25/100  loss=0.11597
+    [R=2 le1000126.h5 sl19 s2] ep   50/100  loss=0.03204
+    [R=2 le1000126.h5 sl19 s2] ep   75/100  loss=0.02599
+    [R=2 le1000126.h5 sl19 s2] ep  100/100  loss=0.02449
+    [R=2 le1000126.h5 sl19 s3] ep   25/100  loss=0.04250
+    [R=2 le1000126.h5 sl19 s3] ep   50/100  loss=0.02781
+    [R=2 le1000126.h5 sl19 s3] ep   75/100  loss=0.02180
+    [R=2 le1000126.h5 sl19 s3] ep  100/100  loss=0.02093
+    [R=2 le1000126.h5 sl25 s2] ep   25/100  loss=0.04302
+    [R=2 le1000126.h5 sl25 s2] ep   50/100  loss=0.03082
+    [R=2 le1000126.h5 sl25 s2] ep   75/100  loss=0.02246
+    [R=2 le1000126.h5 sl25 s2] ep  100/100  loss=0.02143
+    [R=2 le1000126.h5 sl25 s3] ep   25/100  loss=0.04280
+    [R=2 le1000126.h5 sl25 s3] ep   50/100  loss=0.03185
+    [R=2 le1000126.h5 sl25 s3] ep   75/100  loss=0.02320
+    [R=2 le1000126.h5 sl25 s3] ep  100/100  loss=0.02211
+    [R=2 le1000153.h5 sl6 s2] ep   25/100  loss=0.07608
+    [R=2 le1000153.h5 sl6 s2] ep   50/100  loss=0.03441
+    [R=2 le1000153.h5 sl6 s2] ep   75/100  loss=0.02638
+    [R=2 le1000153.h5 sl6 s2] ep  100/100  loss=0.02452
+    [R=2 le1000153.h5 sl6 s3] ep   25/100  loss=0.07307
+    [R=2 le1000153.h5 sl6 s3] ep   50/100  loss=0.03476
+    [R=2 le1000153.h5 sl6 s3] ep   75/100  loss=0.02558
+    [R=2 le1000153.h5 sl6 s3] ep  100/100  loss=0.02505
+    [R=2 le1000153.h5 sl13 s2] ep   25/100  loss=0.03865
+    [R=2 le1000153.h5 sl13 s2] ep   50/100  loss=0.02568
+    [R=2 le1000153.h5 sl13 s2] ep   75/100  loss=0.01988
+    [R=2 le1000153.h5 sl13 s2] ep  100/100  loss=0.01922
+    [R=2 le1000153.h5 sl13 s3] ep   25/100  loss=0.04497
+    [R=2 le1000153.h5 sl13 s3] ep   50/100  loss=0.02121
+    [R=2 le1000153.h5 sl13 s3] ep   75/100  loss=0.01773
+    [R=2 le1000153.h5 sl13 s3] ep  100/100  loss=0.01684
+    [R=2 le1000153.h5 sl20 s2] ep   25/100  loss=0.04267
+    [R=2 le1000153.h5 sl20 s2] ep   50/100  loss=0.03187
+    [R=2 le1000153.h5 sl20 s2] ep   75/100  loss=0.02669
+    [R=2 le1000153.h5 sl20 s2] ep  100/100  loss=0.02517
+    [R=2 le1000153.h5 sl20 s3] ep   25/100  loss=0.06606
+    [R=2 le1000153.h5 sl20 s3] ep   50/100  loss=0.03085
+    [R=2 le1000153.h5 sl20 s3] ep   75/100  loss=0.02390
+    [R=2 le1000153.h5 sl20 s3] ep  100/100  loss=0.02288
+    [R=2 le1000153.h5 sl27 s2] ep   25/100  loss=0.06032
+    [R=2 le1000153.h5 sl27 s2] ep   50/100  loss=0.02674
+    [R=2 le1000153.h5 sl27 s2] ep   75/100  loss=0.02292
+    [R=2 le1000153.h5 sl27 s2] ep  100/100  loss=0.02186
+    [R=2 le1000153.h5 sl27 s3] ep   25/100  loss=0.05318
+    [R=2 le1000153.h5 sl27 s3] ep   50/100  loss=0.02518
+    [R=2 le1000153.h5 sl27 s3] ep   75/100  loss=0.02116
+    [R=2 le1000153.h5 sl27 s3] ep  100/100  loss=0.02037
+
+────────────────────────────────────────────────────────────
+R = 4
+────────────────────────────────────────────────────────────
+    [R=4 le1000126.h5 sl6 s2] ep   25/100  loss=0.05263
+    [R=4 le1000126.h5 sl6 s2] ep   50/100  loss=0.02265
+    [R=4 le1000126.h5 sl6 s2] ep   75/100  loss=0.01798
+    [R=4 le1000126.h5 sl6 s2] ep  100/100  loss=0.01659
+    [R=4 le1000126.h5 sl6 s3] ep   25/100  loss=0.03844
+    [R=4 le1000126.h5 sl6 s3] ep   50/100  loss=0.02595
+    [R=4 le1000126.h5 sl6 s3] ep   75/100  loss=0.02097
+    [R=4 le1000126.h5 sl6 s3] ep  100/100  loss=0.01983
+    [R=4 le1000126.h5 sl12 s2] ep   25/100  loss=0.03836
+    [R=4 le1000126.h5 sl12 s2] ep   50/100  loss=0.02699
+    [R=4 le1000126.h5 sl12 s2] ep   75/100  loss=0.01901
+    [R=4 le1000126.h5 sl12 s2] ep  100/100  loss=0.01776
+    [R=4 le1000126.h5 sl12 s3] ep   25/100  loss=0.04426
+    [R=4 le1000126.h5 sl12 s3] ep   50/100  loss=0.02523
+    [R=4 le1000126.h5 sl12 s3] ep   75/100  loss=0.01787
+    [R=4 le1000126.h5 sl12 s3] ep  100/100  loss=0.01724
+    [R=4 le1000126.h5 sl19 s2] ep   25/100  loss=0.04820
+    [R=4 le1000126.h5 sl19 s2] ep   50/100  loss=0.02959
+    [R=4 le1000126.h5 sl19 s2] ep   75/100  loss=0.02112
+    [R=4 le1000126.h5 sl19 s2] ep  100/100  loss=0.02054
+    [R=4 le1000126.h5 sl19 s3] ep   25/100  loss=0.04115
+    [R=4 le1000126.h5 sl19 s3] ep   50/100  loss=0.02370
+    [R=4 le1000126.h5 sl19 s3] ep   75/100  loss=0.01937
+    [R=4 le1000126.h5 sl19 s3] ep  100/100  loss=0.01900
+    [R=4 le1000126.h5 sl25 s2] ep   25/100  loss=0.10035
+    [R=4 le1000126.h5 sl25 s2] ep   50/100  loss=0.02838
+    [R=4 le1000126.h5 sl25 s2] ep   75/100  loss=0.02222
+    [R=4 le1000126.h5 sl25 s2] ep  100/100  loss=0.02098
+    [R=4 le1000126.h5 sl25 s3] ep   25/100  loss=0.04291
+    [R=4 le1000126.h5 sl25 s3] ep   50/100  loss=0.03105
+    [R=4 le1000126.h5 sl25 s3] ep   75/100  loss=0.02180
+    [R=4 le1000126.h5 sl25 s3] ep  100/100  loss=0.02065
+    [R=4 le1000153.h5 sl6 s2] ep   25/100  loss=0.04875
+    [R=4 le1000153.h5 sl6 s2] ep   50/100  loss=0.02878
+    [R=4 le1000153.h5 sl6 s2] ep   75/100  loss=0.02139
+    [R=4 le1000153.h5 sl6 s2] ep  100/100  loss=0.01966
+    [R=4 le1000153.h5 sl6 s3] ep   25/100  loss=0.07897
+    [R=4 le1000153.h5 sl6 s3] ep   50/100  loss=0.02815
+    [R=4 le1000153.h5 sl6 s3] ep   75/100  loss=0.02070
+    [R=4 le1000153.h5 sl6 s3] ep  100/100  loss=0.01902
+    [R=4 le1000153.h5 sl13 s2] ep   25/100  loss=0.03617
+    [R=4 le1000153.h5 sl13 s2] ep   50/100  loss=0.01951
+    [R=4 le1000153.h5 sl13 s2] ep   75/100  loss=0.01394
+    [R=4 le1000153.h5 sl13 s2] ep  100/100  loss=0.01370
+    [R=4 le1000153.h5 sl13 s3] ep   25/100  loss=0.03787
+    [R=4 le1000153.h5 sl13 s3] ep   50/100  loss=0.02089
+    [R=4 le1000153.h5 sl13 s3] ep   75/100  loss=0.01457
+    [R=4 le1000153.h5 sl13 s3] ep  100/100  loss=0.01424
+    [R=4 le1000153.h5 sl20 s2] ep   25/100  loss=0.04684
+    [R=4 le1000153.h5 sl20 s2] ep   50/100  loss=0.03890
+    [R=4 le1000153.h5 sl20 s2] ep   75/100  loss=0.02229
+    [R=4 le1000153.h5 sl20 s2] ep  100/100  loss=0.02104
+    [R=4 le1000153.h5 sl20 s3] ep   25/100  loss=0.04421
+    [R=4 le1000153.h5 sl20 s3] ep   50/100  loss=0.02861
+    [R=4 le1000153.h5 sl20 s3] ep   75/100  loss=0.02099
+    [R=4 le1000153.h5 sl20 s3] ep  100/100  loss=0.02014
+    [R=4 le1000153.h5 sl27 s2] ep   25/100  loss=0.02647
+    [R=4 le1000153.h5 sl27 s2] ep   50/100  loss=0.01923
+    [R=4 le1000153.h5 sl27 s2] ep   75/100  loss=0.01690
+    [R=4 le1000153.h5 sl27 s2] ep  100/100  loss=0.01666
+    [R=4 le1000153.h5 sl27 s3] ep   25/100  loss=0.03423
+    [R=4 le1000153.h5 sl27 s3] ep   50/100  loss=0.02180
+    [R=4 le1000153.h5 sl27 s3] ep   75/100  loss=0.01826
+    [R=4 le1000153.h5 sl27 s3] ep  100/100  loss=0.01786
+
+────────────────────────────────────────────────────────────
+R = 8
+────────────────────────────────────────────────────────────
+    [R=8 le1000126.h5 sl6 s2] ep   25/100  loss=0.02274
+    [R=8 le1000126.h5 sl6 s2] ep   50/100  loss=0.01751
+    [R=8 le1000126.h5 sl6 s2] ep   75/100  loss=0.01559
+    [R=8 le1000126.h5 sl6 s2] ep  100/100  loss=0.01545
+    [R=8 le1000126.h5 sl6 s3] ep   25/100  loss=0.03787
+    [R=8 le1000126.h5 sl6 s3] ep   50/100  loss=0.02346
+    [R=8 le1000126.h5 sl6 s3] ep   75/100  loss=0.01771
+    [R=8 le1000126.h5 sl6 s3] ep  100/100  loss=0.01739
+    [R=8 le1000126.h5 sl12 s2] ep   25/100  loss=0.02934
+    [R=8 le1000126.h5 sl12 s2] ep   50/100  loss=0.01869
+    [R=8 le1000126.h5 sl12 s2] ep   75/100  loss=0.01575
+    [R=8 le1000126.h5 sl12 s2] ep  100/100  loss=0.01449
+    [R=8 le1000126.h5 sl12 s3] ep   25/100  loss=0.02373
+    [R=8 le1000126.h5 sl12 s3] ep   50/100  loss=0.02138
+    [R=8 le1000126.h5 sl12 s3] ep   75/100  loss=0.01875
+    [R=8 le1000126.h5 sl12 s3] ep  100/100  loss=0.01758
+    [R=8 le1000126.h5 sl19 s2] ep   25/100  loss=0.03468
+    [R=8 le1000126.h5 sl19 s2] ep   50/100  loss=0.01935
+    [R=8 le1000126.h5 sl19 s2] ep   75/100  loss=0.01600
+    [R=8 le1000126.h5 sl19 s2] ep  100/100  loss=0.01548
+    [R=8 le1000126.h5 sl19 s3] ep   25/100  loss=0.03282
+    [R=8 le1000126.h5 sl19 s3] ep   50/100  loss=0.02350
+    [R=8 le1000126.h5 sl19 s3] ep   75/100  loss=0.01730
+    [R=8 le1000126.h5 sl19 s3] ep  100/100  loss=0.01671
+    [R=8 le1000126.h5 sl25 s2] ep   25/100  loss=0.06912
+    [R=8 le1000126.h5 sl25 s2] ep   50/100  loss=0.02665
+    [R=8 le1000126.h5 sl25 s2] ep   75/100  loss=0.01930
+    [R=8 le1000126.h5 sl25 s2] ep  100/100  loss=0.01792
+    [R=8 le1000126.h5 sl25 s3] ep   25/100  loss=0.06221
+    [R=8 le1000126.h5 sl25 s3] ep   50/100  loss=0.02509
+    [R=8 le1000126.h5 sl25 s3] ep   75/100  loss=0.02002
+    [R=8 le1000126.h5 sl25 s3] ep  100/100  loss=0.01887
+    [R=8 le1000153.h5 sl6 s2] ep   25/100  loss=0.04376
+    [R=8 le1000153.h5 sl6 s2] ep   50/100  loss=0.02199
+    [R=8 le1000153.h5 sl6 s2] ep   75/100  loss=0.01949
+    [R=8 le1000153.h5 sl6 s2] ep  100/100  loss=0.01912
+    [R=8 le1000153.h5 sl6 s3] ep   25/100  loss=0.03614
+    [R=8 le1000153.h5 sl6 s3] ep   50/100  loss=0.02171
+    [R=8 le1000153.h5 sl6 s3] ep   75/100  loss=0.01953
+    [R=8 le1000153.h5 sl6 s3] ep  100/100  loss=0.01880
+    [R=8 le1000153.h5 sl13 s2] ep   25/100  loss=0.02708
+    [R=8 le1000153.h5 sl13 s2] ep   50/100  loss=0.02030
+    [R=8 le1000153.h5 sl13 s2] ep   75/100  loss=0.01629
+    [R=8 le1000153.h5 sl13 s2] ep  100/100  loss=0.01509
+    [R=8 le1000153.h5 sl13 s3] ep   25/100  loss=0.02521
+    [R=8 le1000153.h5 sl13 s3] ep   50/100  loss=0.01668
+    [R=8 le1000153.h5 sl13 s3] ep   75/100  loss=0.01497
+    [R=8 le1000153.h5 sl13 s3] ep  100/100  loss=0.01407
+    [R=8 le1000153.h5 sl20 s2] ep   25/100  loss=0.08687
+    [R=8 le1000153.h5 sl20 s2] ep   50/100  loss=0.02416
+    [R=8 le1000153.h5 sl20 s2] ep   75/100  loss=0.01889
+    [R=8 le1000153.h5 sl20 s2] ep  100/100  loss=0.01737
+    [R=8 le1000153.h5 sl20 s3] ep   25/100  loss=0.03371
+    [R=8 le1000153.h5 sl20 s3] ep   50/100  loss=0.02326
+    [R=8 le1000153.h5 sl20 s3] ep   75/100  loss=0.01747
+    [R=8 le1000153.h5 sl20 s3] ep  100/100  loss=0.01598
+    [R=8 le1000153.h5 sl27 s2] ep   25/100  loss=0.03318
+    [R=8 le1000153.h5 sl27 s2] ep   50/100  loss=0.02641
+    [R=8 le1000153.h5 sl27 s2] ep   75/100  loss=0.02148
+    [R=8 le1000153.h5 sl27 s2] ep  100/100  loss=0.02036
+    [R=8 le1000153.h5 sl27 s3] ep   25/100  loss=0.06847
+    [R=8 le1000153.h5 sl27 s3] ep   50/100  loss=0.02467
+    [R=8 le1000153.h5 sl27 s3] ep   75/100  loss=0.02099
+    [R=8 le1000153.h5 sl27 s3] ep  100/100  loss=0.01982
+
+Temperature scaling (fitted on R=4 held-out set):
+  T_50 = 8.3759  (targeting 50% marginal coverage)
+  T_90 = 8.8284  (targeting 90% marginal coverage)
+  |T_50 − T_90| / T_50 = 0.0540  (consistent (Gaussian-like))
+
+  [CHECK 1] T_50=8.3759  T_90=8.8284
+    [50%] marginal=0.500  interior=0.536  boundary=0.417  low_err=0.876  high_err=0.123
+           Δ(boundary-nominal)=-0.083  Δ(high_err-nominal)=-0.377
+    [90%] marginal=0.885  interior=0.909  boundary=0.825  low_err=1.000  high_err=0.770
+           Δ(boundary-nominal)=-0.075  Δ(high_err-nominal)=-0.130
+
+  [CHECK 2] Temperature from R=4: T=8.3759
+    R=2: 50%→marg=0.520 bnd=0.450  90%→marg=0.903 bnd=0.855
+    R=4: 50%→marg=0.500 bnd=0.417  90%→marg=0.885 bnd=0.825
+    R=8: 50%→marg=0.464 bnd=0.352  90%→marg=0.858 bnd=0.742
+
+  [CHECK 3] Ranking invariance under temperature scaling T=8.3759
+    R=2: ρ_raw=0.351026  ρ_scaled=0.351026  Δ=7.21e-11  (INVARIANT)
+    R=4: ρ_raw=0.347278  ρ_scaled=0.347278  Δ=6.80e-10  (INVARIANT)
+    R=8: ρ_raw=0.386196  ρ_scaled=0.386196  Δ=3.99e-10  (INVARIANT)
+
+  → stress_calibration.png
+  → stress_ranking.png
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+STRESS-CALIBRATION VERDICT
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  CHECK 1 — CONDITIONAL COVERAGE (T=8.3759 fitted at R=4)
+  Subset              50% cov    Δ(50%)   90% cov    Δ(90%)
+  ──────────────────  ────────  ────────  ────────  ────────
+  Marginal               0.500    +0.000     0.885    -0.015
+  Interior               0.536    +0.036     0.909    +0.009
+  Boundary               0.417    -0.083     0.825    -0.075 ←UNDER
+  Low-error              0.876    +0.376     1.000    +0.100
+  High-error             0.123    -0.377     0.770    -0.130 ←UNDER
+
+  CHECK 2 — TEMPERATURE TRANSFER (T=8.3759 from R=4)
+     R    50% marg     50% bnd    90% marg     90% bnd    Δ_marg_50%
+  ────  ──────────  ──────────  ──────────  ──────────  ────────────
+     2       0.520       0.450       0.903       0.855        +0.020
+     4       0.500       0.417       0.885       0.825        -0.000 *CALIB*
+     8       0.464       0.352       0.858       0.742        -0.036
+
+  CHECK 3 — RANKING INVARIANCE (max |Δρ| should be ≈0)
+     R     ρ raw    ρ scaled      |Δρ|    Invariant?
+  ────  ────────  ──────────  ────────  ────────────
+     2  0.351026    0.351026  7.21e-11             ✓
+     4  0.347278    0.347278  6.80e-10             ✓
+     8  0.386196    0.386196  3.99e-10             ✓
+
+  CRITERIA:
+    C1a: boundary coverage ≥ nominal−5pp  (50%: Δ=-0.083):  ✗
+    C1b: high-error coverage ≥ nominal−5pp (50%: Δ=-0.377): ✗
+    C1c: boundary 90% ≥ 85pp (Δ=-0.075):                  ✗
+    C2:  T transfers across R (all |Δ|<10pp):                             ✓
+    C3:  ranking invariant to scaling (max|Δρ|=6.80e-10):      ✓
+
+  VERDICT: RANKING-CALIBRATED_ABSTENTION
+    Conditional coverage fails: boundary Δ50%=-0.083, high-error Δ50%=-0.377 (threshold −0.05pp). A global T
+    fixes marginal coverage but leaves structured subsets under-covered. The uncertainty field is not
+    exchangeable across gradient/error regimes. The Spearman ρ (raw=0.3473) is preserved exactly by
+    temperature scaling (rank-order is monotone-invariant). ρ>0 confirms the model knows WHERE uncertainty is
+    high — but the intervals are not reliable enough to publish as confidence bounds.
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  → stress_calibration.json
+
+Final verdict: RANKING-CALIBRATED_ABSTENTION

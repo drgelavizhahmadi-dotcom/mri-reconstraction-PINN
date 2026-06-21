@@ -1,0 +1,77 @@
+{
+  "T_50": 8.375896453857422,
+  "T_90": 8.828411102294922,
+  "R_CALIB": 4,
+  "check1": {
+    "50%": {
+      "marginal": 0.5,
+      "interior": 0.5361255229648052,
+      "boundary": 0.41719494542104163,
+      "low_err": 0.8764335638613512,
+      "high_err": 0.12339505747254448
+    },
+    "90%": {
+      "marginal": 0.8850455216065191,
+      "interior": 0.9094279772568759,
+      "boundary": 0.8245454801929273,
+      "low_err": 0.9995562067931476,
+      "high_err": 0.7703798276738375
+    }
+  },
+  "check2": {
+    "2": {
+      "50%": {
+        "marginal": 0.5197700434908032,
+        "interior": 0.5583664995643529,
+        "boundary": 0.44977172230600526
+      },
+      "90%": {
+        "marginal": 0.9030393199927325,
+        "interior": 0.9235141364356656,
+        "boundary": 0.8554395951159057
+      }
+    },
+    "4": {
+      "50%": {
+        "marginal": 0.49992317585954593,
+        "interior": 0.5361255229648052,
+        "boundary": 0.41719494542104163
+      },
+      "90%": {
+        "marginal": 0.8849707192114172,
+        "interior": 0.9094279772568759,
+        "boundary": 0.8245454801929273
+      }
+    },
+    "8": {
+      "50%": {
+        "marginal": 0.46358157818727064,
+        "interior": 0.5180067389925996,
+        "boundary": 0.35195370013179894
+      },
+      "90%": {
+        "marginal": 0.8576057796263654,
+        "interior": 0.9074959484243785,
+        "boundary": 0.7415945255108233
+      }
+    }
+  },
+  "check3": {
+    "2": {
+      "rho_raw": 0.35102646523597947,
+      "rho_scaled": 0.3510264653081096,
+      "delta": 7.213013519802303e-11
+    },
+    "4": {
+      "rho_raw": 0.3472779479703726,
+      "rho_scaled": 0.3472779472904906,
+      "delta": 6.798819840447834e-10
+    },
+    "8": {
+      "rho_raw": 0.386195607381942,
+      "rho_scaled": 0.38619560778108636,
+      "delta": 3.991443842110698e-10
+    }
+  },
+  "verdict": "RANKING-CALIBRATED_ABSTENTION \u2014 Conditional coverage fails: boundary \u039450%=-0.083, high-error \u039450%=-0.377 (threshold \u22120.05pp). A global T fixes marginal coverage but leaves structured subsets under-covered. The uncertainty field is not exchangeable across gradient/error regimes. The Spearman \u03c1 (raw=0.3473) is preserved exactly by temperature scaling (rank-order is monotone-invariant). \u03c1>0 confirms the model knows WHERE uncertainty is high \u2014 but the intervals are not reliable enough to publish as confidence bounds."
+}
