@@ -1,0 +1,328 @@
+
+Device: mps
+Recon epochs: 200  |  R sweep: [1, 2, 4, 8]  |  Seeds: 3
+SNR=30.0 dB  |  mask_seed=42  |  noise_seed=7
+
+Loading test maps…
+  Using 4 maps from files ['file1000126.h5']
+
+Computing full-sample analytical upper bounds…
+  Done.
+
+══ R=1 ══
+  map 1/4  (file1000126.h5 sl=6 seed=2)
+    [R=1 s0] ep   40/200  loss=0.02446
+    [R=1 s0] ep   80/200  loss=0.01215
+    [R=1 s0] ep  120/200  loss=0.00673
+    [R=1 s0] ep  160/200  loss=0.00461
+    [R=1 s0] ep  200/200  loss=0.00413
+    [R=1 s1] ep   40/200  loss=0.04850
+    [R=1 s1] ep   80/200  loss=0.02128
+    [R=1 s1] ep  120/200  loss=0.01378
+    [R=1 s1] ep  160/200  loss=0.00777
+    [R=1 s1] ep  200/200  loss=0.00691
+    [R=1 s2] ep   40/200  loss=0.03406
+    [R=1 s2] ep   80/200  loss=0.01833
+    [R=1 s2] ep  120/200  loss=0.00885
+    [R=1 s2] ep  160/200  loss=0.00589
+    [R=1 s2] ep  200/200  loss=0.00543
+    R=1  net=3.78ms  zf=1.36ms  ub=0.00ms  corr=1.000  halluc=0.000  frac_T2_unmeas=0.000
+  map 2/4  (file1000126.h5 sl=6 seed=3)
+    [R=1 s0] ep   40/200  loss=0.02836
+    [R=1 s0] ep   80/200  loss=0.02774
+    [R=1 s0] ep  120/200  loss=0.01263
+    [R=1 s0] ep  160/200  loss=0.00866
+    [R=1 s0] ep  200/200  loss=0.00780
+    [R=1 s1] ep   40/200  loss=0.03936
+    [R=1 s1] ep   80/200  loss=0.02127
+    [R=1 s1] ep  120/200  loss=0.01058
+    [R=1 s1] ep  160/200  loss=0.00722
+    [R=1 s1] ep  200/200  loss=0.00669
+    [R=1 s2] ep   40/200  loss=0.03218
+    [R=1 s2] ep   80/200  loss=0.02010
+    [R=1 s2] ep  120/200  loss=0.01094
+    [R=1 s2] ep  160/200  loss=0.00670
+    [R=1 s2] ep  200/200  loss=0.00638
+    R=1  net=3.78ms  zf=1.31ms  ub=0.00ms  corr=1.000  halluc=0.000  frac_T2_unmeas=0.000
+  map 3/4  (file1000126.h5 sl=12 seed=2)
+    [R=1 s0] ep   40/200  loss=0.03050
+    [R=1 s0] ep   80/200  loss=0.03260
+    [R=1 s0] ep  120/200  loss=0.01608
+    [R=1 s0] ep  160/200  loss=0.00961
+    [R=1 s0] ep  200/200  loss=0.00754
+    [R=1 s1] ep   40/200  loss=0.03930
+    [R=1 s1] ep   80/200  loss=0.01990
+    [R=1 s1] ep  120/200  loss=0.00926
+    [R=1 s1] ep  160/200  loss=0.00528
+    [R=1 s1] ep  200/200  loss=0.00456
+    [R=1 s2] ep   40/200  loss=0.02753
+    [R=1 s2] ep   80/200  loss=0.01242
+    [R=1 s2] ep  120/200  loss=0.00641
+    [R=1 s2] ep  160/200  loss=0.00448
+    [R=1 s2] ep  200/200  loss=0.00402
+    R=1  net=4.26ms  zf=1.22ms  ub=0.00ms  corr=1.000  halluc=0.000  frac_T2_unmeas=0.000
+  map 4/4  (file1000126.h5 sl=12 seed=3)
+    [R=1 s0] ep   40/200  loss=0.02387
+    [R=1 s0] ep   80/200  loss=0.01785
+    [R=1 s0] ep  120/200  loss=0.00886
+    [R=1 s0] ep  160/200  loss=0.00561
+    [R=1 s0] ep  200/200  loss=0.00510
+    [R=1 s1] ep   40/200  loss=0.03581
+    [R=1 s1] ep   80/200  loss=0.01642
+    [R=1 s1] ep  120/200  loss=0.00732
+    [R=1 s1] ep  160/200  loss=0.00459
+    [R=1 s1] ep  200/200  loss=0.00416
+    [R=1 s2] ep   40/200  loss=0.02654
+    [R=1 s2] ep   80/200  loss=0.01469
+    [R=1 s2] ep  120/200  loss=0.00984
+    [R=1 s2] ep  160/200  loss=0.00630
+    [R=1 s2] ep  200/200  loss=0.00588
+    R=1  net=4.64ms  zf=1.28ms  ub=0.00ms  corr=1.000  halluc=0.000  frac_T2_unmeas=0.000
+  → R=1 aggregate: net=4.12ms  zf=1.29ms  corr=1.0000  frac_T2_unmeas=0.000
+
+══ R=2 ══
+  map 1/4  (file1000126.h5 sl=6 seed=2)
+    [R=2 s0] ep   40/200  loss=0.02385
+    [R=2 s0] ep   80/200  loss=0.02014
+    [R=2 s0] ep  120/200  loss=0.01370
+    [R=2 s0] ep  160/200  loss=0.01103
+    [R=2 s0] ep  200/200  loss=0.01048
+    [R=2 s1] ep   40/200  loss=0.02836
+    [R=2 s1] ep   80/200  loss=0.01901
+    [R=2 s1] ep  120/200  loss=0.01456
+    [R=2 s1] ep  160/200  loss=0.01293
+    [R=2 s1] ep  200/200  loss=0.01256
+    [R=2 s2] ep   40/200  loss=0.04538
+    [R=2 s2] ep   80/200  loss=0.01915
+    [R=2 s2] ep  120/200  loss=0.01130
+    [R=2 s2] ep  160/200  loss=0.00935
+    [R=2 s2] ep  200/200  loss=0.00890
+    R=2  net=4.74ms  zf=5.99ms  ub=0.00ms  corr=0.610  halluc=2.842  frac_T2_unmeas=0.035
+  map 2/4  (file1000126.h5 sl=6 seed=3)
+    [R=2 s0] ep   40/200  loss=0.02503
+    [R=2 s0] ep   80/200  loss=0.01857
+    [R=2 s0] ep  120/200  loss=0.01419
+    [R=2 s0] ep  160/200  loss=0.01067
+    [R=2 s0] ep  200/200  loss=0.00931
+    [R=2 s1] ep   40/200  loss=0.02784
+    [R=2 s1] ep   80/200  loss=0.02166
+    [R=2 s1] ep  120/200  loss=0.01491
+    [R=2 s1] ep  160/200  loss=0.01242
+    [R=2 s1] ep  200/200  loss=0.01175
+    [R=2 s2] ep   40/200  loss=0.02843
+    [R=2 s2] ep   80/200  loss=0.01577
+    [R=2 s2] ep  120/200  loss=0.01093
+    [R=2 s2] ep  160/200  loss=0.00821
+    [R=2 s2] ep  200/200  loss=0.00750
+    R=2  net=4.52ms  zf=6.17ms  ub=0.00ms  corr=0.696  halluc=1.813  frac_T2_unmeas=0.040
+  map 3/4  (file1000126.h5 sl=12 seed=2)
+    [R=2 s0] ep   40/200  loss=0.03087
+    [R=2 s0] ep   80/200  loss=0.01740
+    [R=2 s0] ep  120/200  loss=0.01654
+    [R=2 s0] ep  160/200  loss=0.01054
+    [R=2 s0] ep  200/200  loss=0.00955
+    [R=2 s1] ep   40/200  loss=0.02664
+    [R=2 s1] ep   80/200  loss=0.01600
+    [R=2 s1] ep  120/200  loss=0.01222
+    [R=2 s1] ep  160/200  loss=0.00890
+    [R=2 s1] ep  200/200  loss=0.00794
+    [R=2 s2] ep   40/200  loss=0.02882
+    [R=2 s2] ep   80/200  loss=0.01888
+    [R=2 s2] ep  120/200  loss=0.01455
+    [R=2 s2] ep  160/200  loss=0.01169
+    [R=2 s2] ep  200/200  loss=0.01084
+    R=2  net=5.52ms  zf=7.95ms  ub=0.00ms  corr=0.663  halluc=1.285  frac_T2_unmeas=0.042
+  map 4/4  (file1000126.h5 sl=12 seed=3)
+    [R=2 s0] ep   40/200  loss=0.02696
+    [R=2 s0] ep   80/200  loss=0.01830
+    [R=2 s0] ep  120/200  loss=0.00985
+    [R=2 s0] ep  160/200  loss=0.00621
+    [R=2 s0] ep  200/200  loss=0.00547
+    [R=2 s1] ep   40/200  loss=0.02899
+    [R=2 s1] ep   80/200  loss=0.01711
+    [R=2 s1] ep  120/200  loss=0.01414
+    [R=2 s1] ep  160/200  loss=0.01274
+    [R=2 s1] ep  200/200  loss=0.01233
+    [R=2 s2] ep   40/200  loss=0.03089
+    [R=2 s2] ep   80/200  loss=0.01922
+    [R=2 s2] ep  120/200  loss=0.01546
+    [R=2 s2] ep  160/200  loss=0.01239
+    [R=2 s2] ep  200/200  loss=0.01131
+    R=2  net=5.35ms  zf=8.17ms  ub=0.00ms  corr=0.669  halluc=2.611  frac_T2_unmeas=0.040
+  → R=2 aggregate: net=5.03ms  zf=7.07ms  corr=0.6593  frac_T2_unmeas=0.039
+
+══ R=4 ══
+  map 1/4  (file1000126.h5 sl=6 seed=2)
+    [R=4 s0] ep   40/200  loss=0.03328
+    [R=4 s0] ep   80/200  loss=0.01322
+    [R=4 s0] ep  120/200  loss=0.01140
+    [R=4 s0] ep  160/200  loss=0.01021
+    [R=4 s0] ep  200/200  loss=0.00981
+    [R=4 s1] ep   40/200  loss=0.02064
+    [R=4 s1] ep   80/200  loss=0.01396
+    [R=4 s1] ep  120/200  loss=0.01060
+    [R=4 s1] ep  160/200  loss=0.00953
+    [R=4 s1] ep  200/200  loss=0.00926
+    [R=4 s2] ep   40/200  loss=0.02187
+    [R=4 s2] ep   80/200  loss=0.01471
+    [R=4 s2] ep  120/200  loss=0.01022
+    [R=4 s2] ep  160/200  loss=0.00896
+    [R=4 s2] ep  200/200  loss=0.00873
+    R=4  net=5.29ms  zf=6.95ms  ub=0.00ms  corr=0.444  halluc=8.051  frac_T2_unmeas=0.051
+  map 2/4  (file1000126.h5 sl=6 seed=3)
+    [R=4 s0] ep   40/200  loss=0.03083
+    [R=4 s0] ep   80/200  loss=0.01554
+    [R=4 s0] ep  120/200  loss=0.01068
+    [R=4 s0] ep  160/200  loss=0.00798
+    [R=4 s0] ep  200/200  loss=0.00735
+    [R=4 s1] ep   40/200  loss=0.02203
+    [R=4 s1] ep   80/200  loss=0.01446
+    [R=4 s1] ep  120/200  loss=0.01126
+    [R=4 s1] ep  160/200  loss=0.00957
+    [R=4 s1] ep  200/200  loss=0.00906
+    [R=4 s2] ep   40/200  loss=0.02140
+    [R=4 s2] ep   80/200  loss=0.02578
+    [R=4 s2] ep  120/200  loss=0.01309
+    [R=4 s2] ep  160/200  loss=0.01111
+    [R=4 s2] ep  200/200  loss=0.01078
+    R=4  net=5.17ms  zf=7.11ms  ub=0.00ms  corr=0.440  halluc=4.499  frac_T2_unmeas=0.059
+  map 3/4  (file1000126.h5 sl=12 seed=2)
+    [R=4 s0] ep   40/200  loss=0.04111
+    [R=4 s0] ep   80/200  loss=0.01602
+    [R=4 s0] ep  120/200  loss=0.01038
+    [R=4 s0] ep  160/200  loss=0.00707
+    [R=4 s0] ep  200/200  loss=0.00631
+    [R=4 s1] ep   40/200  loss=0.02278
+    [R=4 s1] ep   80/200  loss=0.01428
+    [R=4 s1] ep  120/200  loss=0.01273
+    [R=4 s1] ep  160/200  loss=0.01132
+    [R=4 s1] ep  200/200  loss=0.01100
+    [R=4 s2] ep   40/200  loss=0.03082
+    [R=4 s2] ep   80/200  loss=0.01652
+    [R=4 s2] ep  120/200  loss=0.01517
+    [R=4 s2] ep  160/200  loss=0.01271
+    [R=4 s2] ep  200/200  loss=0.01221
+    R=4  net=6.23ms  zf=9.32ms  ub=0.00ms  corr=0.469  halluc=7.620  frac_T2_unmeas=0.059
+  map 4/4  (file1000126.h5 sl=12 seed=3)
+    [R=4 s0] ep   40/200  loss=0.03513
+    [R=4 s0] ep   80/200  loss=0.01408
+    [R=4 s0] ep  120/200  loss=0.00918
+    [R=4 s0] ep  160/200  loss=0.00620
+    [R=4 s0] ep  200/200  loss=0.00575
+    [R=4 s1] ep   40/200  loss=0.01839
+    [R=4 s1] ep   80/200  loss=0.01314
+    [R=4 s1] ep  120/200  loss=0.01022
+    [R=4 s1] ep  160/200  loss=0.00885
+    [R=4 s1] ep  200/200  loss=0.00844
+    [R=4 s2] ep   40/200  loss=0.02988
+    [R=4 s2] ep   80/200  loss=0.01552
+    [R=4 s2] ep  120/200  loss=0.01197
+    [R=4 s2] ep  160/200  loss=0.01017
+    [R=4 s2] ep  200/200  loss=0.00983
+    R=4  net=6.01ms  zf=9.67ms  ub=0.00ms  corr=0.433  halluc=7.330  frac_T2_unmeas=0.057
+  → R=4 aggregate: net=5.67ms  zf=8.26ms  corr=0.4462  frac_T2_unmeas=0.056
+
+══ R=8 ══
+  map 1/4  (file1000126.h5 sl=6 seed=2)
+    [R=8 s0] ep   40/200  loss=0.02592
+    [R=8 s0] ep   80/200  loss=0.01650
+    [R=8 s0] ep  120/200  loss=0.01250
+    [R=8 s0] ep  160/200  loss=0.00917
+    [R=8 s0] ep  200/200  loss=0.00862
+    [R=8 s1] ep   40/200  loss=0.01883
+    [R=8 s1] ep   80/200  loss=0.01346
+    [R=8 s1] ep  120/200  loss=0.00926
+    [R=8 s1] ep  160/200  loss=0.00769
+    [R=8 s1] ep  200/200  loss=0.00743
+    [R=8 s2] ep   40/200  loss=0.02191
+    [R=8 s2] ep   80/200  loss=0.02087
+    [R=8 s2] ep  120/200  loss=0.00955
+    [R=8 s2] ep  160/200  loss=0.00811
+    [R=8 s2] ep  200/200  loss=0.00779
+    R=8  net=5.10ms  zf=6.54ms  ub=0.00ms  corr=0.342  halluc=18.837  frac_T2_unmeas=0.062
+  map 2/4  (file1000126.h5 sl=6 seed=3)
+    [R=8 s0] ep   40/200  loss=0.02148
+    [R=8 s0] ep   80/200  loss=0.01718
+    [R=8 s0] ep  120/200  loss=0.01149
+    [R=8 s0] ep  160/200  loss=0.00943
+    [R=8 s0] ep  200/200  loss=0.00882
+    [R=8 s1] ep   40/200  loss=0.01854
+    [R=8 s1] ep   80/200  loss=0.01335
+    [R=8 s1] ep  120/200  loss=0.00940
+    [R=8 s1] ep  160/200  loss=0.00830
+    [R=8 s1] ep  200/200  loss=0.00805
+    [R=8 s2] ep   40/200  loss=0.04116
+    [R=8 s2] ep   80/200  loss=0.01790
+    [R=8 s2] ep  120/200  loss=0.01028
+    [R=8 s2] ep  160/200  loss=0.00814
+    [R=8 s2] ep  200/200  loss=0.00780
+    R=8  net=5.28ms  zf=6.68ms  ub=0.00ms  corr=0.305  halluc=15.308  frac_T2_unmeas=0.076
+  map 3/4  (file1000126.h5 sl=12 seed=2)
+    [R=8 s0] ep   40/200  loss=0.04191
+    [R=8 s0] ep   80/200  loss=0.01245
+    [R=8 s0] ep  120/200  loss=0.00827
+    [R=8 s0] ep  160/200  loss=0.00549
+    [R=8 s0] ep  200/200  loss=0.00489
+    [R=8 s1] ep   40/200  loss=0.03649
+    [R=8 s1] ep   80/200  loss=0.01516
+    [R=8 s1] ep  120/200  loss=0.00944
+    [R=8 s1] ep  160/200  loss=0.00824
+    [R=8 s1] ep  200/200  loss=0.00809
+    [R=8 s2] ep   40/200  loss=0.02513
+    [R=8 s2] ep   80/200  loss=0.01750
+    [R=8 s2] ep  120/200  loss=0.01086
+    [R=8 s2] ep  160/200  loss=0.00895
+    [R=8 s2] ep  200/200  loss=0.00870
+    R=8  net=6.74ms  zf=9.20ms  ub=0.00ms  corr=0.438  halluc=10.336  frac_T2_unmeas=0.075
+  map 4/4  (file1000126.h5 sl=12 seed=3)
+    [R=8 s0] ep   40/200  loss=0.01963
+    [R=8 s0] ep   80/200  loss=0.01969
+    [R=8 s0] ep  120/200  loss=0.00678
+    [R=8 s0] ep  160/200  loss=0.00458
+    [R=8 s0] ep  200/200  loss=0.00434
+    [R=8 s1] ep   40/200  loss=0.02947
+    [R=8 s1] ep   80/200  loss=0.01548
+    [R=8 s1] ep  120/200  loss=0.00940
+    [R=8 s1] ep  160/200  loss=0.00781
+    [R=8 s1] ep  200/200  loss=0.00758
+    [R=8 s2] ep   40/200  loss=0.02266
+    [R=8 s2] ep   80/200  loss=0.01772
+    [R=8 s2] ep  120/200  loss=0.01234
+    [R=8 s2] ep  160/200  loss=0.00856
+    [R=8 s2] ep  200/200  loss=0.00826
+    R=8  net=6.61ms  zf=10.02ms  ub=0.00ms  corr=0.383  halluc=7.985  frac_T2_unmeas=0.074
+  → R=8 aggregate: net=5.93ms  zf=8.11ms  corr=0.3672  frac_T2_unmeas=0.072
+
+  → accel_sweep.json
+  → accel_sweep_curves.png
+  → accel_sweep_maps.png
+
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+ACCELERATION SWEEP — RESULTS
+  Textured maps (held-out), df=0 Hz, SNR=30 dB, 3p-CNN, 3 seeds
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    R   net-med   net-p95   ZF-med   ZF-p95   UB-med   xseed   net-corr   ZF-corr   halluc   frac-T2   frac-echo
+           (ms)      (ms)     (ms)     (ms)     (ms)    (ms)  (Pearson)                       unmeas      unmeas
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+    1      4.12     15.46     1.29     5.29     0.00   0.990     1.0000    1.0000    0.000     0.000       0.000
+    2      5.03     17.56     7.07    37.19     0.00   1.663     0.6593    0.2246    2.138     0.039       0.065
+    4      5.67     20.50     8.26    34.30     0.00   1.800     0.4462    0.1066    6.875     0.056       0.094
+    8      5.93     24.27     8.11    34.05     0.00   1.515     0.3672    0.1026   13.117     0.072       0.124
+  ══════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  R* criteria: unmeas-band Pearson r > 0.5  AND  net_med < 0.8 × ZF_med
+    R=1: corr=1.000>0.5:True, net<0.8·ZF:False  →  ✗
+    R=2: corr=0.659>0.5:True, net<0.8·ZF:True  →  ✓ HONEST
+    R=4: corr=0.446>0.5:False, net<0.8·ZF:True  →  ✗
+    R=8: corr=0.367>0.5:False, net<0.8·ZF:True  →  ✗
+
+  VERDICT:
+    R* = 2. At R≤2 the 3-param CNN recovers per-pixel T2* texture with unmeasured-band correlation > 0.5
+    and T2* error clearly below the ZF floor. At R > 2 ([4, 8]) the unmeasured band energy fraction is
+    high enough that the network hallucinates texture — the per-pixel T2* claim enters fabrication
+    territory. The operating window for honest per-pixel T2* is R ≤ 2.
+
+  R* = 2
+══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Final verdict: R* = 2
