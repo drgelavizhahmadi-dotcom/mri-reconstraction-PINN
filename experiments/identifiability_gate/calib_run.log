@@ -1,0 +1,350 @@
+
+Device: mps
+Mechanism A: MC-dropout (p=0.1, T=50 samples)
+Mechanism B: Deep ensemble (N=3 seeds)
+Epochs: 100  |  R sweep: [2, 4, 8]  |  SNR=30.0 dB
+
+Loading held-out test maps…
+  4 maps from files ['file1000126.h5']
+
+
+════════════════════════════════════════════════════════════
+  R = 2
+════════════════════════════════════════════════════════════
+
+  Map 1/4  (file1000126.h5 sl=6 s=2)
+    [MC  R=2 m0] ep   25/100  loss=0.04457
+    [MC  R=2 m0] ep   50/100  loss=0.02131
+    [MC  R=2 m0] ep   75/100  loss=0.01775
+    [MC  R=2 m0] ep  100/100  loss=0.01687
+    [Ens0 R=2 m0] ep   20/100  loss=0.04075
+    [Ens0 R=2 m0] ep   40/100  loss=0.04393
+    [Ens0 R=2 m0] ep   60/100  loss=0.02307
+    [Ens0 R=2 m0] ep   80/100  loss=0.01798
+    [Ens0 R=2 m0] ep  100/100  loss=0.01757
+    [Ens1 R=2 m0] ep   20/100  loss=0.04866
+    [Ens1 R=2 m0] ep   40/100  loss=0.04003
+    [Ens1 R=2 m0] ep   60/100  loss=0.02383
+    [Ens1 R=2 m0] ep   80/100  loss=0.02062
+    [Ens1 R=2 m0] ep  100/100  loss=0.01982
+    [Ens2 R=2 m0] ep   20/100  loss=0.11312
+    [Ens2 R=2 m0] ep   40/100  loss=0.03077
+    [Ens2 R=2 m0] ep   60/100  loss=0.01982
+    [Ens2 R=2 m0] ep   80/100  loss=0.01655
+    [Ens2 R=2 m0] ep  100/100  loss=0.01598
+    → MC:  ρ=0.292  cov50=0.08  cov90=0.18  bnd/int=2.16  T2_med=4.89ms
+    → Ens: ρ=0.217  cov50=0.05  cov90=0.12  bnd/int=2.29  T2_med=4.90ms
+
+  Map 2/4  (file1000126.h5 sl=6 s=3)
+    [MC  R=2 m1] ep   25/100  loss=0.04326
+    [MC  R=2 m1] ep   50/100  loss=0.02510
+    [MC  R=2 m1] ep   75/100  loss=0.02134
+    [MC  R=2 m1] ep  100/100  loss=0.02047
+    [Ens0 R=2 m1] ep   20/100  loss=0.04447
+    [Ens0 R=2 m1] ep   40/100  loss=0.02876
+    [Ens0 R=2 m1] ep   60/100  loss=0.02617
+    [Ens0 R=2 m1] ep   80/100  loss=0.02093
+    [Ens0 R=2 m1] ep  100/100  loss=0.02032
+    [Ens1 R=2 m1] ep   20/100  loss=0.04884
+    [Ens1 R=2 m1] ep   40/100  loss=0.02619
+    [Ens1 R=2 m1] ep   60/100  loss=0.02024
+    [Ens1 R=2 m1] ep   80/100  loss=0.01801
+    [Ens1 R=2 m1] ep  100/100  loss=0.01751
+    [Ens2 R=2 m1] ep   20/100  loss=0.04092
+    [Ens2 R=2 m1] ep   40/100  loss=0.04209
+    [Ens2 R=2 m1] ep   60/100  loss=0.02326
+    [Ens2 R=2 m1] ep   80/100  loss=0.01838
+    [Ens2 R=2 m1] ep  100/100  loss=0.01759
+    → MC:  ρ=0.327  cov50=0.08  cov90=0.18  bnd/int=1.91  T2_med=5.06ms
+    → Ens: ρ=0.276  cov50=0.04  cov90=0.09  bnd/int=1.95  T2_med=5.05ms
+
+  Map 3/4  (file1000126.h5 sl=12 s=2)
+    [MC  R=2 m2] ep   25/100  loss=0.02880
+    [MC  R=2 m2] ep   50/100  loss=0.02145
+    [MC  R=2 m2] ep   75/100  loss=0.01809
+    [MC  R=2 m2] ep  100/100  loss=0.01714
+    [Ens0 R=2 m2] ep   20/100  loss=0.04655
+    [Ens0 R=2 m2] ep   40/100  loss=0.02942
+    [Ens0 R=2 m2] ep   60/100  loss=0.02591
+    [Ens0 R=2 m2] ep   80/100  loss=0.02007
+    [Ens0 R=2 m2] ep  100/100  loss=0.01943
+    [Ens1 R=2 m2] ep   20/100  loss=0.05036
+    [Ens1 R=2 m2] ep   40/100  loss=0.02761
+    [Ens1 R=2 m2] ep   60/100  loss=0.02487
+    [Ens1 R=2 m2] ep   80/100  loss=0.02089
+    [Ens1 R=2 m2] ep  100/100  loss=0.02019
+    [Ens2 R=2 m2] ep   20/100  loss=0.04239
+    [Ens2 R=2 m2] ep   40/100  loss=0.02611
+    [Ens2 R=2 m2] ep   60/100  loss=0.01848
+    [Ens2 R=2 m2] ep   80/100  loss=0.01571
+    [Ens2 R=2 m2] ep  100/100  loss=0.01519
+    → MC:  ρ=0.317  cov50=0.08  cov90=0.18  bnd/int=1.41  T2_med=6.26ms
+    → Ens: ρ=0.191  cov50=0.06  cov90=0.13  bnd/int=1.59  T2_med=6.60ms
+
+  Map 4/4  (file1000126.h5 sl=12 s=3)
+    [MC  R=2 m3] ep   25/100  loss=0.04156
+    [MC  R=2 m3] ep   50/100  loss=0.03222
+    [MC  R=2 m3] ep   75/100  loss=0.02378
+    [MC  R=2 m3] ep  100/100  loss=0.02202
+    [Ens0 R=2 m3] ep   20/100  loss=0.03021
+    [Ens0 R=2 m3] ep   40/100  loss=0.01971
+    [Ens0 R=2 m3] ep   60/100  loss=0.01751
+    [Ens0 R=2 m3] ep   80/100  loss=0.01556
+    [Ens0 R=2 m3] ep  100/100  loss=0.01506
+    [Ens1 R=2 m3] ep   20/100  loss=0.05423
+    [Ens1 R=2 m3] ep   40/100  loss=0.02555
+    [Ens1 R=2 m3] ep   60/100  loss=0.01813
+    [Ens1 R=2 m3] ep   80/100  loss=0.01591
+    [Ens1 R=2 m3] ep  100/100  loss=0.01547
+    [Ens2 R=2 m3] ep   20/100  loss=0.03499
+    [Ens2 R=2 m3] ep   40/100  loss=0.03121
+    [Ens2 R=2 m3] ep   60/100  loss=0.02261
+    [Ens2 R=2 m3] ep   80/100  loss=0.01686
+    [Ens2 R=2 m3] ep  100/100  loss=0.01614
+    → MC:  ρ=0.356  cov50=0.06  cov90=0.15  bnd/int=1.35  T2_med=6.75ms
+    → Ens: ρ=0.195  cov50=0.04  cov90=0.10  bnd/int=1.67  T2_med=6.46ms
+
+  R=2 aggregate: MC ρ=0.3229  cov50=7.2%  cov90=17.5%  bnd/int=1.71
+
+════════════════════════════════════════════════════════════
+  R = 4
+════════════════════════════════════════════════════════════
+
+  Map 1/4  (file1000126.h5 sl=6 s=2)
+    [MC  R=4 m0] ep   25/100  loss=0.03189
+    [MC  R=4 m0] ep   50/100  loss=0.02128
+    [MC  R=4 m0] ep   75/100  loss=0.01556
+    [MC  R=4 m0] ep  100/100  loss=0.01463
+    [Ens0 R=4 m0] ep   20/100  loss=0.04888
+    [Ens0 R=4 m0] ep   40/100  loss=0.02901
+    [Ens0 R=4 m0] ep   60/100  loss=0.02063
+    [Ens0 R=4 m0] ep   80/100  loss=0.01631
+    [Ens0 R=4 m0] ep  100/100  loss=0.01466
+    [Ens1 R=4 m0] ep   20/100  loss=0.03749
+    [Ens1 R=4 m0] ep   40/100  loss=0.02710
+    [Ens1 R=4 m0] ep   60/100  loss=0.02048
+    [Ens1 R=4 m0] ep   80/100  loss=0.01707
+    [Ens1 R=4 m0] ep  100/100  loss=0.01592
+    [Ens2 R=4 m0] ep   20/100  loss=0.04447
+    [Ens2 R=4 m0] ep   40/100  loss=0.03095
+    [Ens2 R=4 m0] ep   60/100  loss=0.02320
+    [Ens2 R=4 m0] ep   80/100  loss=0.01920
+    [Ens2 R=4 m0] ep  100/100  loss=0.01800
+    → MC:  ρ=0.319  cov50=0.08  cov90=0.19  bnd/int=2.29  T2_med=5.26ms
+    → Ens: ρ=0.228  cov50=0.04  cov90=0.10  bnd/int=2.05  T2_med=5.37ms
+
+  Map 2/4  (file1000126.h5 sl=6 s=3)
+    [MC  R=4 m1] ep   25/100  loss=0.03828
+    [MC  R=4 m1] ep   50/100  loss=0.02098
+    [MC  R=4 m1] ep   75/100  loss=0.01751
+    [MC  R=4 m1] ep  100/100  loss=0.01679
+    [Ens0 R=4 m1] ep   20/100  loss=0.04896
+    [Ens0 R=4 m1] ep   40/100  loss=0.02270
+    [Ens0 R=4 m1] ep   60/100  loss=0.02424
+    [Ens0 R=4 m1] ep   80/100  loss=0.01514
+    [Ens0 R=4 m1] ep  100/100  loss=0.01456
+    [Ens1 R=4 m1] ep   20/100  loss=0.05401
+    [Ens1 R=4 m1] ep   40/100  loss=0.02668
+    [Ens1 R=4 m1] ep   60/100  loss=0.01900
+    [Ens1 R=4 m1] ep   80/100  loss=0.01472
+    [Ens1 R=4 m1] ep  100/100  loss=0.01406
+    [Ens2 R=4 m1] ep   20/100  loss=0.06775
+    [Ens2 R=4 m1] ep   40/100  loss=0.02946
+    [Ens2 R=4 m1] ep   60/100  loss=0.02442
+    [Ens2 R=4 m1] ep   80/100  loss=0.01818
+    [Ens2 R=4 m1] ep  100/100  loss=0.01665
+    → MC:  ρ=0.357  cov50=0.07  cov90=0.17  bnd/int=1.87  T2_med=5.44ms
+    → Ens: ρ=0.244  cov50=0.04  cov90=0.11  bnd/int=1.76  T2_med=5.43ms
+
+  Map 3/4  (file1000126.h5 sl=12 s=2)
+    [MC  R=4 m2] ep   25/100  loss=0.04121
+    [MC  R=4 m2] ep   50/100  loss=0.03449
+    [MC  R=4 m2] ep   75/100  loss=0.02116
+    [MC  R=4 m2] ep  100/100  loss=0.01882
+    [Ens0 R=4 m2] ep   20/100  loss=0.03421
+    [Ens0 R=4 m2] ep   40/100  loss=0.02153
+    [Ens0 R=4 m2] ep   60/100  loss=0.01472
+    [Ens0 R=4 m2] ep   80/100  loss=0.01289
+    [Ens0 R=4 m2] ep  100/100  loss=0.01228
+    [Ens1 R=4 m2] ep   20/100  loss=0.04573
+    [Ens1 R=4 m2] ep   40/100  loss=0.03234
+    [Ens1 R=4 m2] ep   60/100  loss=0.02571
+    [Ens1 R=4 m2] ep   80/100  loss=0.01960
+    [Ens1 R=4 m2] ep  100/100  loss=0.01736
+    [Ens2 R=4 m2] ep   20/100  loss=0.03947
+    [Ens2 R=4 m2] ep   40/100  loss=0.02271
+    [Ens2 R=4 m2] ep   60/100  loss=0.01421
+    [Ens2 R=4 m2] ep   80/100  loss=0.01246
+    [Ens2 R=4 m2] ep  100/100  loss=0.01211
+    → MC:  ρ=0.237  cov50=0.08  cov90=0.19  bnd/int=1.16  T2_med=6.87ms
+    → Ens: ρ=0.044  cov50=0.06  cov90=0.16  bnd/int=1.20  T2_med=6.99ms
+
+  Map 4/4  (file1000126.h5 sl=12 s=3)
+    [MC  R=4 m3] ep   25/100  loss=0.07517
+    [MC  R=4 m3] ep   50/100  loss=0.02969
+    [MC  R=4 m3] ep   75/100  loss=0.01841
+    [MC  R=4 m3] ep  100/100  loss=0.01707
+    [Ens0 R=4 m3] ep   20/100  loss=0.03606
+    [Ens0 R=4 m3] ep   40/100  loss=0.02611
+    [Ens0 R=4 m3] ep   60/100  loss=0.01658
+    [Ens0 R=4 m3] ep   80/100  loss=0.01440
+    [Ens0 R=4 m3] ep  100/100  loss=0.01392
+    [Ens1 R=4 m3] ep   20/100  loss=0.03187
+    [Ens1 R=4 m3] ep   40/100  loss=0.02373
+    [Ens1 R=4 m3] ep   60/100  loss=0.01574
+    [Ens1 R=4 m3] ep   80/100  loss=0.01384
+    [Ens1 R=4 m3] ep  100/100  loss=0.01340
+    [Ens2 R=4 m3] ep   20/100  loss=0.06278
+    [Ens2 R=4 m3] ep   40/100  loss=0.02958
+    [Ens2 R=4 m3] ep   60/100  loss=0.01896
+    [Ens2 R=4 m3] ep   80/100  loss=0.01413
+    [Ens2 R=4 m3] ep  100/100  loss=0.01366
+    → MC:  ρ=0.357  cov50=0.09  cov90=0.20  bnd/int=1.44  T2_med=6.42ms
+    → Ens: ρ=0.204  cov50=0.04  cov90=0.09  bnd/int=1.64  T2_med=6.61ms
+
+  R=4 aggregate: MC ρ=0.3175  cov50=7.9%  cov90=19.0%  bnd/int=1.69
+
+════════════════════════════════════════════════════════════
+  R = 8
+════════════════════════════════════════════════════════════
+
+  Map 1/4  (file1000126.h5 sl=6 s=2)
+    [MC  R=8 m0] ep   25/100  loss=0.03902
+    [MC  R=8 m0] ep   50/100  loss=0.01888
+    [MC  R=8 m0] ep   75/100  loss=0.01631
+    [MC  R=8 m0] ep  100/100  loss=0.01600
+    [Ens0 R=8 m0] ep   20/100  loss=0.04195
+    [Ens0 R=8 m0] ep   40/100  loss=0.01857
+    [Ens0 R=8 m0] ep   60/100  loss=0.01489
+    [Ens0 R=8 m0] ep   80/100  loss=0.01265
+    [Ens0 R=8 m0] ep  100/100  loss=0.01213
+    [Ens1 R=8 m0] ep   20/100  loss=0.02469
+    [Ens1 R=8 m0] ep   40/100  loss=0.01837
+    [Ens1 R=8 m0] ep   60/100  loss=0.01565
+    [Ens1 R=8 m0] ep   80/100  loss=0.01426
+    [Ens1 R=8 m0] ep  100/100  loss=0.01381
+    [Ens2 R=8 m0] ep   20/100  loss=0.03660
+    [Ens2 R=8 m0] ep   40/100  loss=0.01697
+    [Ens2 R=8 m0] ep   60/100  loss=0.01459
+    [Ens2 R=8 m0] ep   80/100  loss=0.01290
+    [Ens2 R=8 m0] ep  100/100  loss=0.01241
+    → MC:  ρ=0.410  cov50=0.08  cov90=0.20  bnd/int=1.87  T2_med=5.18ms
+    → Ens: ρ=0.279  cov50=0.04  cov90=0.09  bnd/int=2.22  T2_med=5.13ms
+
+  Map 2/4  (file1000126.h5 sl=6 s=3)
+    [MC  R=8 m1] ep   25/100  loss=0.02843
+    [MC  R=8 m1] ep   50/100  loss=0.01844
+    [MC  R=8 m1] ep   75/100  loss=0.01479
+    [MC  R=8 m1] ep  100/100  loss=0.01426
+    [Ens0 R=8 m1] ep   20/100  loss=0.02724
+    [Ens0 R=8 m1] ep   40/100  loss=0.02048
+    [Ens0 R=8 m1] ep   60/100  loss=0.01771
+    [Ens0 R=8 m1] ep   80/100  loss=0.01576
+    [Ens0 R=8 m1] ep  100/100  loss=0.01509
+    [Ens1 R=8 m1] ep   20/100  loss=0.02456
+    [Ens1 R=8 m1] ep   40/100  loss=0.01845
+    [Ens1 R=8 m1] ep   60/100  loss=0.01605
+    [Ens1 R=8 m1] ep   80/100  loss=0.01419
+    [Ens1 R=8 m1] ep  100/100  loss=0.01373
+    [Ens2 R=8 m1] ep   20/100  loss=0.04153
+    [Ens2 R=8 m1] ep   40/100  loss=0.01932
+    [Ens2 R=8 m1] ep   60/100  loss=0.01616
+    [Ens2 R=8 m1] ep   80/100  loss=0.01379
+    [Ens2 R=8 m1] ep  100/100  loss=0.01329
+    → MC:  ρ=0.405  cov50=0.07  cov90=0.18  bnd/int=1.60  T2_med=5.41ms
+    → Ens: ρ=0.303  cov50=0.03  cov90=0.07  bnd/int=1.62  T2_med=5.48ms
+
+  Map 3/4  (file1000126.h5 sl=12 s=2)
+    [MC  R=8 m2] ep   25/100  loss=0.06777
+    [MC  R=8 m2] ep   50/100  loss=0.02856
+    [MC  R=8 m2] ep   75/100  loss=0.01985
+    [MC  R=8 m2] ep  100/100  loss=0.01873
+    [Ens0 R=8 m2] ep   20/100  loss=0.02680
+    [Ens0 R=8 m2] ep   40/100  loss=0.01774
+    [Ens0 R=8 m2] ep   60/100  loss=0.01268
+    [Ens0 R=8 m2] ep   80/100  loss=0.00918
+    [Ens0 R=8 m2] ep  100/100  loss=0.00870
+    [Ens1 R=8 m2] ep   20/100  loss=0.02623
+    [Ens1 R=8 m2] ep   40/100  loss=0.02132
+    [Ens1 R=8 m2] ep   60/100  loss=0.01648
+    [Ens1 R=8 m2] ep   80/100  loss=0.01349
+    [Ens1 R=8 m2] ep  100/100  loss=0.01268
+    [Ens2 R=8 m2] ep   20/100  loss=0.02399
+    [Ens2 R=8 m2] ep   40/100  loss=0.03063
+    [Ens2 R=8 m2] ep   60/100  loss=0.01838
+    [Ens2 R=8 m2] ep   80/100  loss=0.01663
+    [Ens2 R=8 m2] ep  100/100  loss=0.01602
+    → MC:  ρ=0.072  cov50=0.07  cov90=0.16  bnd/int=1.02  T2_med=7.28ms
+    → Ens: ρ=0.132  cov50=0.04  cov90=0.10  bnd/int=1.25  T2_med=7.27ms
+
+  Map 4/4  (file1000126.h5 sl=12 s=3)
+    [MC  R=8 m3] ep   25/100  loss=0.04005
+    [MC  R=8 m3] ep   50/100  loss=0.02288
+    [MC  R=8 m3] ep   75/100  loss=0.01816
+    [MC  R=8 m3] ep  100/100  loss=0.01711
+    [Ens0 R=8 m3] ep   20/100  loss=0.02586
+    [Ens0 R=8 m3] ep   40/100  loss=0.01974
+    [Ens0 R=8 m3] ep   60/100  loss=0.01779
+    [Ens0 R=8 m3] ep   80/100  loss=0.01596
+    [Ens0 R=8 m3] ep  100/100  loss=0.01544
+    [Ens1 R=8 m3] ep   20/100  loss=0.02625
+    [Ens1 R=8 m3] ep   40/100  loss=0.01915
+    [Ens1 R=8 m3] ep   60/100  loss=0.01638
+    [Ens1 R=8 m3] ep   80/100  loss=0.01476
+    [Ens1 R=8 m3] ep  100/100  loss=0.01416
+    [Ens2 R=8 m3] ep   20/100  loss=0.02700
+    [Ens2 R=8 m3] ep   40/100  loss=0.03197
+    [Ens2 R=8 m3] ep   60/100  loss=0.01878
+    [Ens2 R=8 m3] ep   80/100  loss=0.01727
+    [Ens2 R=8 m3] ep  100/100  loss=0.01689
+    → MC:  ρ=0.328  cov50=0.08  cov90=0.18  bnd/int=1.28  T2_med=7.15ms
+    → Ens: ρ=0.167  cov50=0.04  cov90=0.10  bnd/int=1.18  T2_med=7.33ms
+
+  R=8 aggregate: MC ρ=0.3036  cov50=7.4%  cov90=18.1%  bnd/int=1.44
+  → calib_R2__textured_map_1.png
+  → calib_R4__textured_map_1.png
+  → calib_R8__textured_map_1.png
+  → calib_summary.png
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CALIBRATED UNCERTAINTY — RESULTS
+  Mechanism A: MC-dropout (p=0.10, T=50 samples)  |  Mechanism B: Deep ensemble (N=3)
+  Textured held-out maps, df=0 Hz, SNR=30 dB, 100 epochs
+════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  A) MC-DROPOUT
+    R   ρ(std,err)   cov-50%   cov-90%   std-mean   T2-med   bnd/int   bnd-std   int-std
+        (Spearman)  (nom=50)  (nom=90)       (ms)     (ms)     ratio      (ms)      (ms)
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────
+    2       0.3229      7.2%     17.5%      1.239     5.74      1.71     1.711     1.022
+    4       0.3175      7.9%     19.0%      1.418     6.00      1.69     1.926     1.187
+    8       0.3036      7.4%     18.1%      1.337     6.26      1.44     1.684     1.187
+
+  B) DEEP ENSEMBLE (3 seeds — prior 'cross-seed std' baseline)
+    R   ρ(std,err)   cov-50%   cov-90%   std-mean   T2-med   bnd/int
+  ────────────────────────────────────────────────────────────────────────────────
+    2       0.2199      4.5%     11.0%      0.819     5.76      1.87
+    4       0.1799      4.6%     11.5%      0.905     6.10      1.66
+    8       0.2203      3.6%      8.7%      0.720     6.30      1.57
+
+  REFERENCE: R*=2 (honest recovery threshold from accel-sweep)
+  At R=2 the network recovers texture honestly; at R≥4 it fabricates.
+
+  VERDICT CRITERIA:
+    MC-dropout Spearman ρ > 0.20 at all R:      ✓   (['0.323', '0.318', '0.304'])
+    MC-dropout ρ > ensemble ρ (avg):             ✓   (0.315 vs 0.207)
+    Mean uncertainty rises R=2→8:                ✓   (1.239 → 1.337 ms)
+    Boundary/interior ratio > 1.1 at high R:     ✓   (ratio at R=8: 1.44)
+    50% coverage in [30%, 80%]:                  ✗   (['7%', '8%', '7%'])
+    90% coverage in [60%, 100%]:                 ✗   (['18%', '19%', '18%'])
+
+  VERDICT:
+    OVERCONFIDENT — Uncertainty correlates with error (Spearman > 0) but intervals are too narrow:
+    50%/90% coverage below nominal at some R values. The model knows WHERE it is uncertain but
+    underestimates the magnitude. Calibration recalibration (temperature scaling) would fix interval
+    widths.
+════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  → calib_uncertainty.json
+
+Final verdict: OVERCONFIDENT
