@@ -1,0 +1,230 @@
+
+════════════════════════════════════════════════════════════════════════════════
+STEP 0 — DATA FORM DETECTION
+════════════════════════════════════════════════════════════════════════════════
+  Dataset     : fastMRI singlecoil knee (data/singlecoil_val/)
+  Sequence    : CORPD_FBK — TurboSpinEcho, TE_eff=32ms, TR=2800ms
+  k-space     : single-coil emulated complex64, FULLY-SAMPLED, (N_sl, 640, W)
+  Echo struct : SINGLE-ECHO — NO multi-TE data available
+  ── HARD STOP for T2* parameter mapping ───────────────────────────────────
+     Cannot reproduce T2*/S0/Df fitting claims from single-echo TSE data.
+  ── SURROGATE: Single-echo PD image reconstruction ────────────────────────
+     N_ECHOES=1, TE_eff=32ms, same DC-loss, same mask design, same R sweep
+  Device : mps
+  R sweep: [2, 4, 8]   TRAIN_EPOCHS=100   N_MC=50   N_SEEDS=2
+
+Loading real data …
+  Loaded file1000126.h5 slice=16  fg=16284px  HF-SNR=1.85
+  Loaded file1000153.h5 slice=17  fg=16204px  HF-SNR=1.91
+  Loaded file1000182.h5 slice=19  fg=16148px  HF-SNR=2.58
+
+────────────────────────────────────────────────────────────
+R = 2
+────────────────────────────────────────────────────────────
+    [A2 R=2 sl0 seed0] ep   25/100  loss=0.03514
+    [A2 R=2 sl0 seed0] ep   50/100  loss=0.01650
+    [A2 R=2 sl0 seed0] ep   75/100  loss=0.01287
+    [A2 R=2 sl0 seed0] ep  100/100  loss=0.01205
+    [A2 R=2 sl0 seed1] ep   25/100  loss=0.07483
+    [A2 R=2 sl0 seed1] ep   50/100  loss=0.02130
+    [A2 R=2 sl0 seed1] ep   75/100  loss=0.01755
+    [A2 R=2 sl0 seed1] ep  100/100  loss=0.01491
+  [R=2 sl0] ZF NRMSE=0.0944 tex=0.804  A2 NRMSE=0.7283 tex=0.590  A2 ρ=0.108
+  [R=2 sl0] k-res ZF  meas=0.6161 unmeas=0.9931
+  [R=2 sl0] k-res A2  meas=0.8603 unmeas=0.9597
+  → real_repro_file1000126._R2.png
+    [A2 R=2 sl1 seed0] ep   25/100  loss=0.02108
+    [A2 R=2 sl1 seed0] ep   50/100  loss=0.01540
+    [A2 R=2 sl1 seed0] ep   75/100  loss=0.01211
+    [A2 R=2 sl1 seed0] ep  100/100  loss=0.01082
+    [A2 R=2 sl1 seed1] ep   25/100  loss=0.02491
+    [A2 R=2 sl1 seed1] ep   50/100  loss=0.02050
+    [A2 R=2 sl1 seed1] ep   75/100  loss=0.01441
+    [A2 R=2 sl1 seed1] ep  100/100  loss=0.01338
+  [R=2 sl1] ZF NRMSE=0.0995 tex=0.807  A2 NRMSE=0.7333 tex=0.636  A2 ρ=-0.216
+  [R=2 sl1] k-res ZF  meas=0.5825 unmeas=0.9659
+  [R=2 sl1] k-res A2  meas=0.8506 unmeas=0.9557
+  → real_repro_file1000153._R2.png
+    [A2 R=2 sl2 seed0] ep   25/100  loss=0.02153
+    [A2 R=2 sl2 seed0] ep   50/100  loss=0.01084
+    [A2 R=2 sl2 seed0] ep   75/100  loss=0.00840
+    [A2 R=2 sl2 seed0] ep  100/100  loss=0.00738
+    [A2 R=2 sl2 seed1] ep   25/100  loss=0.03122
+    [A2 R=2 sl2 seed1] ep   50/100  loss=0.01270
+    [A2 R=2 sl2 seed1] ep   75/100  loss=0.00964
+    [A2 R=2 sl2 seed1] ep  100/100  loss=0.00851
+  [R=2 sl2] ZF NRMSE=0.0754 tex=0.830  A2 NRMSE=0.7644 tex=0.609  A2 ρ=0.133
+  [R=2 sl2] k-res ZF  meas=0.5272 unmeas=0.9278
+  [R=2 sl2] k-res A2  meas=0.8086 unmeas=0.9477
+  → real_repro_file1000182._R2.png
+
+────────────────────────────────────────────────────────────
+R = 4
+────────────────────────────────────────────────────────────
+    [A2 R=4 sl0 seed0] ep   25/100  loss=0.02493
+    [A2 R=4 sl0 seed0] ep   50/100  loss=0.01077
+    [A2 R=4 sl0 seed0] ep   75/100  loss=0.00928
+    [A2 R=4 sl0 seed0] ep  100/100  loss=0.00855
+    [A2 R=4 sl0 seed1] ep   25/100  loss=0.02974
+    [A2 R=4 sl0 seed1] ep   50/100  loss=0.01497
+    [A2 R=4 sl0 seed1] ep   75/100  loss=0.01089
+    [A2 R=4 sl0 seed1] ep  100/100  loss=0.00997
+  [R=4 sl0] ZF NRMSE=0.1178 tex=0.683  A2 NRMSE=0.7623 tex=0.494  A2 ρ=0.289
+  [R=4 sl0] k-res ZF  meas=0.5896 unmeas=0.9957
+  [R=4 sl0] k-res A2  meas=0.8721 unmeas=0.9819
+  → real_repro_file1000126._R4.png
+    [A2 R=4 sl1 seed0] ep   25/100  loss=0.02199
+    [A2 R=4 sl1 seed0] ep   50/100  loss=0.01211
+    [A2 R=4 sl1 seed0] ep   75/100  loss=0.00888
+    [A2 R=4 sl1 seed0] ep  100/100  loss=0.00826
+    [A2 R=4 sl1 seed1] ep   25/100  loss=0.04186
+    [A2 R=4 sl1 seed1] ep   50/100  loss=0.01284
+    [A2 R=4 sl1 seed1] ep   75/100  loss=0.00922
+    [A2 R=4 sl1 seed1] ep  100/100  loss=0.00861
+  [R=4 sl1] ZF NRMSE=0.1226 tex=0.694  A2 NRMSE=0.7298 tex=0.552  A2 ρ=0.127
+  [R=4 sl1] k-res ZF  meas=0.5533 unmeas=0.9774
+  [R=4 sl1] k-res A2  meas=0.8315 unmeas=0.9727
+  → real_repro_file1000153._R4.png
+    [A2 R=4 sl2 seed0] ep   25/100  loss=0.03580
+    [A2 R=4 sl2 seed0] ep   50/100  loss=0.01165
+    [A2 R=4 sl2 seed0] ep   75/100  loss=0.00608
+    [A2 R=4 sl2 seed0] ep  100/100  loss=0.00547
+    [A2 R=4 sl2 seed1] ep   25/100  loss=0.02083
+    [A2 R=4 sl2 seed1] ep   50/100  loss=0.00977
+    [A2 R=4 sl2 seed1] ep   75/100  loss=0.00701
+    [A2 R=4 sl2 seed1] ep  100/100  loss=0.00617
+  [R=4 sl2] ZF NRMSE=0.0919 tex=0.726  A2 NRMSE=0.7578 tex=0.536  A2 ρ=0.234
+  [R=4 sl2] k-res ZF  meas=0.4969 unmeas=0.9565
+  [R=4 sl2] k-res A2  meas=0.7830 unmeas=0.9810
+  → real_repro_file1000182._R4.png
+
+────────────────────────────────────────────────────────────
+R = 8
+────────────────────────────────────────────────────────────
+    [A2 R=8 sl0 seed0] ep   25/100  loss=0.01713
+    [A2 R=8 sl0 seed0] ep   50/100  loss=0.00969
+    [A2 R=8 sl0 seed0] ep   75/100  loss=0.00684
+    [A2 R=8 sl0 seed0] ep  100/100  loss=0.00585
+    [A2 R=8 sl0 seed1] ep   25/100  loss=0.01582
+    [A2 R=8 sl0 seed1] ep   50/100  loss=0.00925
+    [A2 R=8 sl0 seed1] ep   75/100  loss=0.00770
+    [A2 R=8 sl0 seed1] ep  100/100  loss=0.00706
+  [R=8 sl0] ZF NRMSE=0.1335 tex=0.569  A2 NRMSE=0.7630 tex=0.413  A2 ρ=0.430
+  [R=8 sl0] k-res ZF  meas=0.5902 unmeas=0.9944
+  [R=8 sl0] k-res A2  meas=0.8542 unmeas=0.9922
+  → real_repro_file1000126._R8.png
+    [A2 R=8 sl1 seed0] ep   25/100  loss=0.01995
+    [A2 R=8 sl1 seed0] ep   50/100  loss=0.01051
+    [A2 R=8 sl1 seed0] ep   75/100  loss=0.00619
+    [A2 R=8 sl1 seed0] ep  100/100  loss=0.00568
+    [A2 R=8 sl1 seed1] ep   25/100  loss=0.02532
+    [A2 R=8 sl1 seed1] ep   50/100  loss=0.01055
+    [A2 R=8 sl1 seed1] ep   75/100  loss=0.00801
+    [A2 R=8 sl1 seed1] ep  100/100  loss=0.00703
+  [R=8 sl1] ZF NRMSE=0.1369 tex=0.585  A2 NRMSE=0.7110 tex=0.453  A2 ρ=-0.025
+  [R=8 sl1] k-res ZF  meas=0.5504 unmeas=0.9884
+  [R=8 sl1] k-res A2  meas=0.8100 unmeas=0.9906
+  → real_repro_file1000153._R8.png
+    [A2 R=8 sl2 seed0] ep   25/100  loss=0.06092
+    [A2 R=8 sl2 seed0] ep   50/100  loss=0.01175
+    [A2 R=8 sl2 seed0] ep   75/100  loss=0.00526
+    [A2 R=8 sl2 seed0] ep  100/100  loss=0.00456
+    [A2 R=8 sl2 seed1] ep   25/100  loss=0.01487
+    [A2 R=8 sl2 seed1] ep   50/100  loss=0.00568
+    [A2 R=8 sl2 seed1] ep   75/100  loss=0.00428
+    [A2 R=8 sl2 seed1] ep  100/100  loss=0.00397
+  [R=8 sl2] ZF NRMSE=0.1049 tex=0.622  A2 NRMSE=0.7553 tex=0.474  A2 ρ=0.240
+  [R=8 sl2] k-res ZF  meas=0.4888 unmeas=0.9726
+  [R=8 sl2] k-res A2  meas=0.7574 unmeas=0.9893
+  → real_repro_file1000182._R8.png
+  → real_repro_summary.png
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+REAL-DATA REPRODUCTION TABLES  (single-echo PD surrogate; NOT T2* mapping)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  STEP 0 HARD STOP  ─ T2* parameter mapping
+  Reason  : fastMRI singlecoil knee is a SINGLE-ECHO TSE (TE_eff=32ms).
+  Finding : No multiple TEs available → T2* and S0 cannot be separated per voxel.
+  Impact  : Claims about T2* recovery, T2* texture fidelity, and T2* MC-dropout
+            uncertainty CANNOT be tested from this data.
+  Surrogate: IMAGE-DOMAIN RECONSTRUCTION repro proceeds below.
+
+  Reference HF-band SNR: 2.11 ± 0.33
+  (FS reference is an ESTIMATE — not ground truth. All deviations are vs this estimate.)
+
+  TABLE A — NRMSE (fg)  [image reconstruction vs FS estimate]
+    R     A1-ZF NRMSE    A2 NRMSE   A2 xseed-std
+  ───  ──────────────  ──────────  ─────────────
+    2          0.0898      0.7420       0.056922
+    4          0.1108      0.7500       0.061029
+    8          0.1251      0.7431       0.058516
+
+  TABLE B — Texture fidelity (HF Pearson r vs FS estimate)
+    R    A1-ZF tex    A2 tex
+  ───  ───────────  ────────
+    2       0.8136    0.6115
+    4       0.7010    0.5272
+    8       0.5919    0.4470
+
+  TABLE C — k-space residuals (normalised)  [BLIND SPOT check]
+    R   ZF meas   ZF unmeas   A2 meas   A2 unmeas
+  ───  ────────  ──────────  ────────  ──────────
+    2    0.5753      0.9623    0.8398      0.9543
+    4    0.5466      0.9766    0.8289      0.9785
+    8    0.5431      0.9851    0.8072      0.9907
+
+  TABLE D — A2 MC-dropout uncertainty quality
+    R   Spearman ρ   bnd/int
+  ───  ───────────  ────────
+    2       0.0081     0.923
+    4       0.2167     0.808
+    8       0.2153     0.795
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  REPRODUCTION CHECKS
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  CHECK 1 — BOUNDARY (R* ~ 2):
+    A2 tex-r: R=2 → 0.6115  R=4 → 0.5272  R=8 → 0.4470
+    Verdict: PARTIAL  (tex-r at R=2 = 0.611; threshold behaviour present but at different R
+
+  CHECK 2 — BLIND SPOT (fabrication at R>2):
+    A2 k-space residuals (R>2 avg): meas=0.8180  unmeas=0.9846  ratio=1.20
+    Verdict: DOES-NOT-REPRODUCE  (ratio = 1.20; fabrication signature absent
+
+  CHECK 3 — ABSTENTION (MC-dropout ranking):
+    Mean ρ(unc, |dev|) = 0.1467   boundary/interior ratio = 0.842
+    Verdict: DOES-NOT-REPRODUCE  (ρ = 0.147, bnd/int = 0.84)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+  SUMMARY VERDICT
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  STEP 0 DATA FORM: HARD STOP for T2* parameter mapping.
+    Available: single-echo PD TSE, TE_eff=32ms, fully-sampled (199 volumes, 100 CORPD_FBK).
+    Missing  : multiple TEs → T2* unidentifiable from single echo.
+    Surrogate: image-domain PD reconstruction repro (N_ECHOES=1, same DC-loss, same masks).
+  
+  CHECK 1 — BOUNDARY R*: PARTIAL
+    A2 texture fidelity: R=2 → 0.611  R=4 → 0.527  R=8 → 0.447
+    The reconstruction quality boundary is present but shifted (tex-r at R=2=0.611).
+  
+  CHECK 2 — BLIND SPOT: DOES-NOT-REPRODUCE
+    Unmeasured-band residual = 0.9846  vs measured = 0.8180  (ratio=1.20)
+    Fabrication signature is absent on real PD data.
+  
+  CHECK 3 — ABSTENTION: DOES-NOT-REPRODUCE
+    ρ(unc,|dev|) = 0.1467   bnd/int = 0.842
+    MC-dropout uncertainty shows limited (ρ=0.147) ranking on real PD data.
+  
+  LIMITATION FLAGS:
+    • This is a single-echo surrogate, NOT a T2* parameter-mapping reproduction.
+    • Reference = IFFT(FS k-space): an estimate, not ground truth.
+    • A3 (supervised) DROPPED: single-volume circular supervision.
+      Cohort available (100 CORPD training volumes) for future A3 comparison.
+    • TSE sequences have echo-train phase-encode ordering effects not in simulation.
+    • Real noise is correlated across k-space (receive chain noise), unlike iid simulation noise.
+
+
+  → real_repro.json

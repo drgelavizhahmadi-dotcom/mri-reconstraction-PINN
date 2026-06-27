@@ -1,0 +1,256 @@
+{
+  "step0": {
+    "data_type": "fastMRI_singlecoil_knee_CORPD_FBK",
+    "sequence": "TurboSpinEcho",
+    "te_eff_ms": 32.0,
+    "echo_structure": "SINGLE_ECHO",
+    "hard_stop_t2star": true,
+    "surrogate": "single_echo_PD_image_reconstruction"
+  },
+  "results": [
+    {
+      "R": 2,
+      "slice_idx": 0,
+      "file": "file1000126.h5",
+      "ref_hf_snr": 1.854876348307485,
+      "a1": {
+        "nrmse": 0.09443441033363342,
+        "tex": 0.8037725494482769,
+        "kres": {
+          "meas": 0.6161394715309143,
+          "unmeas": 0.9931463003158569
+        }
+      },
+      "a2": {
+        "nrmse": 0.7282631397247314,
+        "tex": 0.5895671999503247,
+        "kres": {
+          "meas": 0.860258162021637,
+          "unmeas": 0.959659218788147
+        },
+        "xseed_std": 0.050883762538433075,
+        "unc": {
+          "rho": 0.10791089202390852,
+          "bnd_int": 0.9069914221763611
+        }
+      }
+    },
+    {
+      "R": 2,
+      "slice_idx": 1,
+      "file": "file1000153.h5",
+      "ref_hf_snr": 1.9051914351036372,
+      "a1": {
+        "nrmse": 0.09947323054075241,
+        "tex": 0.807429903629169,
+        "kres": {
+          "meas": 0.5824922919273376,
+          "unmeas": 0.9658583998680115
+        }
+      },
+      "a2": {
+        "nrmse": 0.7332817912101746,
+        "tex": 0.635739608715523,
+        "kres": {
+          "meas": 0.8505542874336243,
+          "unmeas": 0.9556553363800049
+        },
+        "xseed_std": 0.08304011821746826,
+        "unc": {
+          "rho": -0.2164980630429432,
+          "bnd_int": 1.0360134840011597
+        }
+      }
+    },
+    {
+      "R": 2,
+      "slice_idx": 2,
+      "file": "file1000182.h5",
+      "ref_hf_snr": 2.580560300792131,
+      "a1": {
+        "nrmse": 0.07542179524898529,
+        "tex": 0.8295455483443204,
+        "kres": {
+          "meas": 0.5272460579872131,
+          "unmeas": 0.9277908802032471
+        }
+      },
+      "a2": {
+        "nrmse": 0.764398992061615,
+        "tex": 0.6091698335804001,
+        "kres": {
+          "meas": 0.808638870716095,
+          "unmeas": 0.9477220177650452
+        },
+        "xseed_std": 0.03684311732649803,
+        "unc": {
+          "rho": 0.13291425971329915,
+          "bnd_int": 0.8249861001968384
+        }
+      }
+    },
+    {
+      "R": 4,
+      "slice_idx": 0,
+      "file": "file1000126.h5",
+      "ref_hf_snr": 1.854876348307485,
+      "a1": {
+        "nrmse": 0.11783149093389511,
+        "tex": 0.6833243880824991,
+        "kres": {
+          "meas": 0.5896031856536865,
+          "unmeas": 0.9957349896430969
+        }
+      },
+      "a2": {
+        "nrmse": 0.7622601985931396,
+        "tex": 0.49401316123028527,
+        "kres": {
+          "meas": 0.8720842599868774,
+          "unmeas": 0.9818910956382751
+        },
+        "xseed_std": 0.049622368067502975,
+        "unc": {
+          "rho": 0.288709019322267,
+          "bnd_int": 0.759789228439331
+        }
+      }
+    },
+    {
+      "R": 4,
+      "slice_idx": 1,
+      "file": "file1000153.h5",
+      "ref_hf_snr": 1.9051914351036372,
+      "a1": {
+        "nrmse": 0.12262424826622009,
+        "tex": 0.6939687746537366,
+        "kres": {
+          "meas": 0.5533062815666199,
+          "unmeas": 0.9774402976036072
+        }
+      },
+      "a2": {
+        "nrmse": 0.7298204898834229,
+        "tex": 0.552098414488947,
+        "kres": {
+          "meas": 0.8315221071243286,
+          "unmeas": 0.9726775288581848
+        },
+        "xseed_std": 0.0927286446094513,
+        "unc": {
+          "rho": 0.12743419115160262,
+          "bnd_int": 0.9200987219810486
+        }
+      }
+    },
+    {
+      "R": 4,
+      "slice_idx": 2,
+      "file": "file1000182.h5",
+      "ref_hf_snr": 2.580560300792131,
+      "a1": {
+        "nrmse": 0.09187514334917068,
+        "tex": 0.7256566164028087,
+        "kres": {
+          "meas": 0.49692338705062866,
+          "unmeas": 0.956480860710144
+        }
+      },
+      "a2": {
+        "nrmse": 0.7577705979347229,
+        "tex": 0.5355114189066233,
+        "kres": {
+          "meas": 0.782953143119812,
+          "unmeas": 0.9810231924057007
+        },
+        "xseed_std": 0.04073621332645416,
+        "unc": {
+          "rho": 0.2339007418583631,
+          "bnd_int": 0.7455847859382629
+        }
+      }
+    },
+    {
+      "R": 8,
+      "slice_idx": 0,
+      "file": "file1000126.h5",
+      "ref_hf_snr": 1.854876348307485,
+      "a1": {
+        "nrmse": 0.13351024687290192,
+        "tex": 0.5694370508717022,
+        "kres": {
+          "meas": 0.5901890993118286,
+          "unmeas": 0.9944407939910889
+        }
+      },
+      "a2": {
+        "nrmse": 0.7629519701004028,
+        "tex": 0.4133781151565808,
+        "kres": {
+          "meas": 0.8541783094406128,
+          "unmeas": 0.9921708703041077
+        },
+        "xseed_std": 0.03846243396401405,
+        "unc": {
+          "rho": 0.4302276097287052,
+          "bnd_int": 0.7163865566253662
+        }
+      }
+    },
+    {
+      "R": 8,
+      "slice_idx": 1,
+      "file": "file1000153.h5",
+      "ref_hf_snr": 1.9051914351036372,
+      "a1": {
+        "nrmse": 0.13689061999320984,
+        "tex": 0.584500313116942,
+        "kres": {
+          "meas": 0.5503660440444946,
+          "unmeas": 0.9883677363395691
+        }
+      },
+      "a2": {
+        "nrmse": 0.7110204100608826,
+        "tex": 0.45302684984874664,
+        "kres": {
+          "meas": 0.8100095987319946,
+          "unmeas": 0.9906297922134399
+        },
+        "xseed_std": 0.096757672727108,
+        "unc": {
+          "rho": -0.024674496738786383,
+          "bnd_int": 0.9240916967391968
+        }
+      }
+    },
+    {
+      "R": 8,
+      "slice_idx": 2,
+      "file": "file1000182.h5",
+      "ref_hf_snr": 2.580560300792131,
+      "a1": {
+        "nrmse": 0.10493798553943634,
+        "tex": 0.6216645687328952,
+        "kres": {
+          "meas": 0.4887807369232178,
+          "unmeas": 0.9726353883743286
+        }
+      },
+      "a2": {
+        "nrmse": 0.7553041577339172,
+        "tex": 0.4744595773931728,
+        "kres": {
+          "meas": 0.7574305534362793,
+          "unmeas": 0.9892721772193909
+        },
+        "xseed_std": 0.040327418595552444,
+        "unc": {
+          "rho": 0.24042468543414416,
+          "bnd_int": 0.7443020343780518
+        }
+      }
+    }
+  ],
+  "verdict": "STEP 0 DATA FORM: HARD STOP for T2* parameter mapping.\n  Available: single-echo PD TSE, TE_eff=32ms, fully-sampled (199 volumes, 100 CORPD_FBK).\n  Missing  : multiple TEs \u2192 T2* unidentifiable from single echo.\n  Surrogate: image-domain PD reconstruction repro (N_ECHOES=1, same DC-loss, same masks).\n\nCHECK 1 \u2014 BOUNDARY R*: PARTIAL\n  A2 texture fidelity: R=2 \u2192 0.611  R=4 \u2192 0.527  R=8 \u2192 0.447\n  The reconstruction quality boundary is present but shifted (tex-r at R=2=0.611).\n\nCHECK 2 \u2014 BLIND SPOT: DOES-NOT-REPRODUCE\n  Unmeasured-band residual = 0.9846  vs measured = 0.8180  (ratio=1.20)\n  Fabrication signature is absent on real PD data.\n\nCHECK 3 \u2014 ABSTENTION: DOES-NOT-REPRODUCE\n  \u03c1(unc,|dev|) = 0.1467   bnd/int = 0.842\n  MC-dropout uncertainty shows limited (\u03c1=0.147) ranking on real PD data.\n\nLIMITATION FLAGS:\n  \u2022 This is a single-echo surrogate, NOT a T2* parameter-mapping reproduction.\n  \u2022 Reference = IFFT(FS k-space): an estimate, not ground truth.\n  \u2022 A3 (supervised) DROPPED: single-volume circular supervision.\n    Cohort available (100 CORPD training volumes) for future A3 comparison.\n  \u2022 TSE sequences have echo-train phase-encode ordering effects not in simulation.\n  \u2022 Real noise is correlated across k-space (receive chain noise), unlike iid simulation noise."
+}
