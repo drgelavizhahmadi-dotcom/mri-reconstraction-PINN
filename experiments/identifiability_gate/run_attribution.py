@@ -1,425 +1,700 @@
 #!/usr/bin/env python3
 """
-Attribution Experiment: "COMPLETION NECESSARY" vs "IT WAS THE BUG"
-====================================================================
-Isolates the cause of the off-resonance BRITTLE failure reported in
-run_mismatch.py (T2*~41 ms at df=20 Hz, 51× jump).
+Attribution experiment: physics vs architecture vs information limit.
+=====================================================================
+Three arms run on SAME maps/seeds across R ∈ {1,2,4,8},
+phantom (piecewise-constant) and textured CORPD maps, df=0.
 
-run_offres_fix.py changed TWO things simultaneously:
-  a) Fixed a 1000× phase bug in synthesise() (te_ms used as if te_s)
-  b) Added a third bottleneck parameter (Df)
+ARM 1 — PHYSICS-ONLY (no network, no labels)
+  (a) ARM1_FULL: analytical per-pixel log-linear fit on FULLY-SAMPLED echoes.
+      Upper bound: data is complete, only noise limits accuracy.
+  (b) ARM1_ZF:   same fit on ZERO-FILLED undersampled magnitude echoes.
+      Physics-only floor for undersampled data.
 
-This experiment uses IDENTICAL bug-fixed data across all conditions and varies
-ONLY the model and loss to isolate which change actually matters.
+ARM 2 — PHYSICS-GROUNDED (the method)
+  BottleneckNet3MC + complex k-space data-consistency loss.
+  Label-free (self-supervised); uses the forward operator.
 
-CONDITIONS (same phantom, same seeds, SAME kspace data per df level):
-  (1) 2p-complex  : 2-param model (S0, T2*), complex k-space DC loss    ← CONTROL
-  (2) 3p-complex  : 3-param model (S0, T2*, Df), complex DC loss        ← COMPLETION FIX
-  (3) 2p-mag      : 2-param model, phase-invariant magnitude DC loss     ← MECHANISM PROBE
-  (R) 2p-complex on BUGGY data (offres_map×1000) — regression anchor
-                   expected to reproduce ~41 ms                          ← BUG CONFIRM
+ARM 3 — NO-PHYSICS BLACK-BOX (steelmanned control)
+  IDENTICAL architecture (BottleneckNet3MC, same width/depth/dropout).
+  Forward operator REMOVED; trained by SUPERVISED regression to GT maps.
+  Given GT labels (an advantage vs ARM 2) so it is not strawmanned.
 
-VERDICT LOGIC:
-  COMPLETION NECESSARY: cond(1) T2* meaningfully degraded at physical df (clearly
-    worse than cond(2)) — the phase DOF is genuinely needed at physical levels.
-  IT WAS THE BUG: cond(1) stays near df=0 control at physical df — off-resonance
-    at physical levels was never a real failure; the 51× jump was purely the bug.
-  MECHANISM: if cond(1) breaks but cond(3) recovers — the failure is the complex
-    loss demanding unmodeled phase, not lost amplitude/T2* information; TWO valid
-    fixes exist (model the phase via Df, OR use a phase-insensitive loss).
+METRICS per arm / R / map-type:
+  A. Recovery:    T2* error (median, p95), texture-fidelity corr (HF band)
+  B. Uncertainty: Spearman rho(uncertainty, |error|), boundary/interior std ratio
+                  — MC-dropout active on BOTH arms 2 and 3.
 
 Usage:
     python experiments/identifiability_gate/run_attribution.py
-    python experiments/identifiability_gate/run_attribution.py --epochs 400 --no-regression
 """
 
 from __future__ import annotations
 
-import argparse
+import json
+import os
 import random
 import sys
 import warnings
 from pathlib import Path
 
+import h5py
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from scipy.ndimage import gaussian_filter, sobel, zoom
+from scipy.stats import pearsonr, spearmanr
 
-_GATE_DIR = Path(__file__).resolve().parent
+_GATE_DIR  = Path(__file__).resolve().parent
+_REPO_ROOT = _GATE_DIR.parent.parent
+sys.path.insert(0, str(_REPO_ROOT / "src"))
 sys.path.insert(0, str(_GATE_DIR))
 
-from run_gate import (                                          # noqa: E402
-    make_phantom, synthesise,
-    BottleneckNet, kspace_consistency_loss, predict_from_model,
-    fft2c_torch,
-    H, W, TEs_MS, N_ECHOES, ACCEL, CF, N_SEEDS, HIDDEN, T2_MIN, T2_MAX,
-    RESULTS_DIR,
+from run_gate import (                            # noqa: E402
+    synthesise, analytical_fit,
+    H, W, TEs_MS, N_ECHOES, CF, HIDDEN, T2_MIN, T2_MAX, RESULTS_DIR,
 )
-from run_mismatch import make_offres_map                        # noqa: E402
-from run_offres_fix import (                                    # noqa: E402
-    BottleneckNet3, train_3param, predict_3param,
-    _make_complex_zf_input, DF_BOUND,
+from run_offres_fix import (                      # noqa: E402
+    kspace_loss_3param, DF_BOUND, _make_complex_zf_input,
+)
+from run_calib_uncertainty import (               # noqa: E402
+    BottleneckNet3MC, train_mc_model, mc_predict,
+    MASK_SEED, NOISE_SEED, SNR_DB, TRAIN_EPOCHS, DROPOUT_P, N_MC,
 )
 
-warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore")
 
 # ─────────────────────────────── constants ───────────────────────────────────
 
-SNR_DB        = 30.0
-OFFRES_LEVELS = [0, 20, 50, 100]   # Hz
-
-COND_LABELS = {
-    "2p-complex"    : "(1) 2p / complex DC",
-    "3p-complex"    : "(2) 3p / complex DC",
-    "2p-mag"        : "(3) 2p / mag DC   ",
-    "2p-complex-bug": "(R) 2p / complex DC / BUGGY data",
-}
+ACCEL_SWEEP      = [1, 2, 4, 8]
+SEED             = 42
+N_MAPS           = 2            # CORPD files used (keeps runtime short)
+TEXTURE_AMP      = 0.30
+TEXTURE_SIGMA    = 3.0
+N_PRETRAIN_FILES = 8
+DATA_DIR         = Path("data/singlecoil_val")
+HF_SIGMA         = 3.0          # Gaussian high-pass σ for texture-fidelity
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAGNITUDE-ONLY DC LOSS
+# PART 1 — DATA LOADING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def kspace_mag_loss(s0: torch.Tensor, t2: torch.Tensor,
-                    k_under_tc: torch.Tensor, mask_tc: torch.Tensor,
-                    TEs_ms: list[float]) -> torch.Tensor:
+def _get_corpd_files() -> list[str]:
+    files = []
+    for fn in sorted(os.listdir(DATA_DIR)):
+        try:
+            with h5py.File(DATA_DIR / fn, "r") as f:
+                acq  = f.attrs.get("acquisition", "")
+                n_sl = f["reconstruction_rss"].shape[0]
+            if "CORPD" in acq and "FS" not in acq and "DFS" not in acq and n_sl >= 30:
+                files.append(fn)
+        except Exception:
+            pass
+    return sorted(files)
+
+
+def _make_slice_maps(
+    rss_slice: np.ndarray, texture_seed: int, texture_amp: float
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return (S0, T2_gt, fg); tissue-class T2* ± Gaussian texture."""
+    scale = H / rss_slice.shape[0]
+    S0 = zoom(rss_slice, scale).astype(np.float32)[:H, :W]
+    S0 /= S0.max() + 1e-9
+    fg = S0 > 0.05
+
+    bins   = [0.0, 0.05, 0.20, 0.40, 0.65, 1.01]
+    t2_val = [T2_MIN, 20.0, 40.0, 65.0, 85.0]
+    lbl    = np.digitize(S0, bins) - 1
+    T2_base = np.full((H, W), T2_MIN, dtype=np.float32)
+    for ci, tv in enumerate(t2_val):
+        T2_base[lbl == ci] = tv
+
+    if texture_amp > 0:
+        rng      = np.random.default_rng(texture_seed)
+        noise    = rng.standard_normal((H, W)).astype(np.float32)
+        noise_sm = gaussian_filter(noise, sigma=TEXTURE_SIGMA)
+        noise_sm /= noise_sm.std() + 1e-8
+        T2 = np.clip(T2_base * (1.0 + texture_amp * noise_sm), T2_MIN, T2_MAX)
+    else:
+        T2 = T2_base.copy()
+
+    T2[~fg] = T2_MIN
+    return S0.astype(np.float32), T2.astype(np.float32), fg
+
+
+def load_maps() -> dict[str, list[dict]]:
     """
-    Normalised k-space DC loss comparing k-space MAGNITUDES — phase-invariant.
-
-    If cond(1) [complex loss] fails but this variant succeeds: the mechanism is the
-    complex loss penalising unmodeled phase, not a loss of T2* amplitude information.
-    Both models produce real echoes; only the loss comparison differs.
+    Load N_MAPS CORPD test files; from each file take one mid-slice.
+    Returns phantom (texture_amp=0) and textured (texture_amp=0.3) variants.
     """
-    s0_ = s0[0, 0]; t2_ = t2[0, 0]
-    total = torch.zeros(1, device=s0.device)
-    norm  = torch.zeros(1, device=s0.device)
-    for e, te in enumerate(TEs_ms):
-        echo_hat = s0_ * torch.exp(-te / t2_)          # [H, W] real amplitude
-        k_hat    = fft2c_torch(echo_hat)                # [H, W] complex (conj-symmetric)
-        k_meas   = k_under_tc[e]
-        res      = mask_tc * (k_hat.abs() - k_meas.abs())   # magnitude diff only
-        total    = total + (res ** 2).sum()
-        norm     = norm  + (mask_tc * k_meas.abs() ** 2).sum()
-    return total / (norm + 1e-8)
+    all_files  = _get_corpd_files()
+    test_files = all_files[N_PRETRAIN_FILES: N_PRETRAIN_FILES + N_MAPS]
+    phantom_maps: list[dict] = []
+    textured_maps: list[dict] = []
+
+    for fn in test_files:
+        with h5py.File(DATA_DIR / fn, "r") as f:
+            rss = f["reconstruction_rss"][()]
+        n_sl = rss.shape[0]
+        si   = int(n_sl * 0.5)
+
+        for mtype, amp in [("phantom", 0.0), ("textured", TEXTURE_AMP)]:
+            S0, T2, fg = _make_slice_maps(rss[si], texture_seed=2, texture_amp=amp)
+            rec = dict(S0=S0, T2=T2, fg=fg,
+                       Df=np.zeros((H, W), dtype=np.float32),
+                       file=fn, slice=int(si), mtype=mtype)
+            (phantom_maps if mtype == "phantom" else textured_maps).append(rec)
+
+    return dict(phantom=phantom_maps, textured=textured_maps)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GENERIC 2-PARAM TRAINING (accepts caller-supplied loss fn, avoids touching run_gate.py)
+# PART 2 — ARM 3 SUPERVISED TRAINING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _train_2param(model: BottleneckNet,
-                  zf_input: torch.Tensor,
-                  k_under_tc: torch.Tensor,
-                  mask_tc: torch.Tensor,
-                  TEs_ms: list[float],
-                  loss_fn,
-                  n_epochs: int,
-                  lr: float,
-                  device: torch.device,
-                  label: str = "") -> tuple[BottleneckNet, float]:
-    model      = model.to(device)
-    zf_input   = zf_input.to(device)
-    k_under_tc = k_under_tc.to(device)
-    mask_tc    = mask_tc.to(device)
+def _supervised_loss(
+    s0_pred: torch.Tensor, t2_pred: torch.Tensor, df_pred: torch.Tensor,
+    s0_gt: torch.Tensor,   t2_gt: torch.Tensor,   df_gt: torch.Tensor,
+) -> torch.Tensor:
+    """MSE on GT maps; each term normalised to [0,1] scale to equalise magnitudes."""
+    ls0 = F.mse_loss(s0_pred, s0_gt)
+    lt2 = F.mse_loss(t2_pred / T2_MAX, t2_gt / T2_MAX)
+    ldf = F.mse_loss(df_pred / DF_BOUND, df_gt / DF_BOUND)
+    return ls0 + lt2 + ldf
 
-    opt   = torch.optim.Adam(model.parameters(), lr=lr)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=n_epochs, eta_min=lr * 0.01)
 
-    final_loss = float("nan")
-    log_every  = max(1, n_epochs // 5)
+def train_arm3_supervised(
+    model: BottleneckNet3MC,
+    zf_input: torch.Tensor,          # [1, 2*N_E, H, W]
+    s0_gt: np.ndarray,
+    t2_gt: np.ndarray,
+    df_gt: np.ndarray,
+    n_epochs: int,
+    device: torch.device,
+    label: str = "",
+) -> BottleneckNet3MC:
+    """
+    ARM 3: identical architecture to ARM 2 but supervised on GT maps.
+    No forward operator; loss is purely MAP-space regression.
+    Steelmanned: receives GT labels that ARM 2 never sees.
+    """
+    model    = model.to(device)
+    zf_input = zf_input.to(device)
+    s0_tc    = torch.from_numpy(s0_gt[None, None]).to(device)   # [1,1,H,W]
+    t2_tc    = torch.from_numpy(t2_gt[None, None]).to(device)
+    df_tc    = torch.from_numpy(df_gt[None, None]).to(device)
+
+    opt   = torch.optim.Adam(model.parameters(), lr=1e-3)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=n_epochs, eta_min=1e-5)
+    log_ev = max(1, n_epochs // 4)
 
     for ep in range(1, n_epochs + 1):
         model.train()
         opt.zero_grad()
-        s0_hat, t2_hat = model(zf_input)
-        loss = loss_fn(s0_hat, t2_hat, k_under_tc, mask_tc, TEs_ms)
+        s0_p, t2_p, df_p = model(zf_input)
+        loss = _supervised_loss(s0_p, t2_p, df_p, s0_tc, t2_tc, df_tc)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step(); sched.step()
-        if ep == n_epochs:
-            final_loss = float(loss.item())
-        if ep % log_every == 0:
+        if ep % log_ev == 0:
             print(f"    [{label}] ep {ep:4d}/{n_epochs}  loss={loss.item():.5f}")
-
-    return model, final_loss
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# DATA GENERATION — single entry point with bug-fix toggle
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def make_data(S0_gt: np.ndarray, T2s_gt: np.ndarray,
-              df_max: int, TEs_ms: list[float] = TEs_MS,
-              bugfix_phase: bool = True) -> dict:
-    """
-    bugfix_phase=True  → physically correct te/1000 in phase exponent.
-    bugfix_phase=False → reproduces pre-fix bug: equivalent to offres_map×1000
-                         so that the fixed synthesise() computes te/1000 × 1000 = te.
-    Both paths call the SAME synthesise() with identical arguments except offres_map scale.
-    """
-    if df_max > 0:
-        offres_map = make_offres_map(H, W, float(df_max))
-        if not bugfix_phase:
-            offres_map = offres_map * 1000.0   # undo /1000 fix → reproduce old bug
-    else:
-        offres_map = None
-    return synthesise(S0_gt, T2s_gt, TEs_ms, ACCEL, CF, SNR_DB,
-                      mask_seed=42, noise_seed=7, offres_map=offres_map)
+    return model
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# METRICS
+# PART 3 — METRICS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def t2_metrics(T2_pred: np.ndarray, T2_gt: np.ndarray, fg: np.ndarray) -> dict:
+def recovery_metrics(T2_pred: np.ndarray, T2_gt: np.ndarray, fg: np.ndarray) -> dict:
     err = np.abs(T2_pred[fg] - T2_gt[fg])
-    return dict(
-        t2_med=float(np.median(err)),
-        t2_p95=float(np.percentile(err, 95)),
+    return dict(t2_med=float(np.median(err)), t2_p95=float(np.percentile(err, 95)))
+
+
+def texture_fidelity(
+    T2_pred: np.ndarray, T2_gt: np.ndarray, fg: np.ndarray, sigma: float = HF_SIGMA
+) -> float:
+    """Pearson r of Gaussian-high-pass residuals on fg pixels."""
+    hf_pred = T2_pred - gaussian_filter(T2_pred.astype(np.float64), sigma)
+    hf_gt   = T2_gt   - gaussian_filter(T2_gt.astype(np.float64),   sigma)
+    if fg.sum() < 20:
+        return float("nan")
+    r, _ = pearsonr(hf_pred[fg], hf_gt[fg])
+    return float(r) if np.isfinite(r) else 0.0
+
+
+def uncertainty_metrics(
+    T2_std: np.ndarray, T2_err: np.ndarray, T2_gt: np.ndarray, fg: np.ndarray
+) -> dict:
+    """Spearman rho(std, |err|) and boundary/interior mean-std ratio."""
+    rho, _ = spearmanr(T2_std[fg], T2_err[fg])
+
+    gx   = sobel(T2_gt.astype(np.float64), axis=0)
+    gy   = sobel(T2_gt.astype(np.float64), axis=1)
+    grad = np.sqrt(gx**2 + gy**2)
+    fg_g = grad[fg]; fg_s = T2_std[fg]
+    p50  = np.percentile(fg_g, 50)
+    p80  = np.percentile(fg_g, 80)
+    int_std = fg_s[fg_g <= p50].mean()
+    bnd_std = fg_s[fg_g >= p80].mean()
+    bnd_int = float(bnd_std / (int_std + 1e-8))
+
+    return dict(rho=float(rho) if np.isfinite(rho) else 0.0, bnd_int=bnd_int)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PART 4 — RUN ONE CONDITION (one map × one R)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def run_condition(tmap: dict, R: int, device: torch.device, map_idx: int) -> dict:
+    S0_gt = tmap["S0"]; T2_gt = tmap["T2"]
+    fg    = tmap["fg"]; Df_gt = tmap["Df"]
+    pfx   = f"R={R} m{map_idx} ({tmap['mtype']})"
+
+    torch.manual_seed(SEED); np.random.seed(SEED); random.seed(SEED)
+
+    # ── synthesise ────────────────────────────────────────────────────────────
+    data    = synthesise(S0_gt, T2_gt, TEs_MS, accel=max(R, 1),
+                         cf=CF, snr_db=SNR_DB, mask_seed=MASK_SEED, noise_seed=NOISE_SEED)
+
+    zf_arr  = _make_complex_zf_input(data["kspace_under"])
+    zf_in   = torch.from_numpy(zf_arr).unsqueeze(0)          # [1, 2*N_E, H, W]
+    k_under = torch.from_numpy(data["kspace_under"]).to(torch.complex64)
+    mask_tc = torch.from_numpy(data["mask_2d"])
+
+    # ── ARM 1 — analytical fit ────────────────────────────────────────────────
+    _, T2_ana_full = analytical_fit(data["echoes_full"], TEs_MS)
+    _, T2_ana_zf   = analytical_fit(data["zf_mag"],     TEs_MS)
+
+    # ── ARM 2 — physics-grounded (k-space DC loss, self-supervised) ──────────
+    arm2 = BottleneckNet3MC(n_echoes=N_ECHOES, hidden=HIDDEN,
+                            T2_min=T2_MIN, T2_max=T2_MAX,
+                            df_bound=DF_BOUND, p=DROPOUT_P)
+    arm2, _ = train_mc_model(arm2, zf_in, k_under, mask_tc,
+                             TRAIN_EPOCHS, device, label=f"ARM2 {pfx}")
+    T2_arm2_mean, T2_arm2_std = mc_predict(arm2, zf_in, device, n_samples=N_MC)
+
+    # ── ARM 3 — no-physics black-box, supervised on GT maps (steelmanned) ────
+    arm3 = BottleneckNet3MC(n_echoes=N_ECHOES, hidden=HIDDEN,
+                            T2_min=T2_MIN, T2_max=T2_MAX,
+                            df_bound=DF_BOUND, p=DROPOUT_P)
+    arm3 = train_arm3_supervised(
+        arm3, zf_in, S0_gt, T2_gt, Df_gt,
+        n_epochs=TRAIN_EPOCHS, device=device, label=f"ARM3 {pfx}",
     )
+    T2_arm3_mean, T2_arm3_std = mc_predict(arm3, zf_in, device, n_samples=N_MC)
+
+    # ── metrics ───────────────────────────────────────────────────────────────
+    rec = {
+        "arm1_full": recovery_metrics(T2_ana_full,  T2_gt, fg),
+        "arm1_zf":   recovery_metrics(T2_ana_zf,    T2_gt, fg),
+        "arm2":      recovery_metrics(T2_arm2_mean, T2_gt, fg),
+        "arm3":      recovery_metrics(T2_arm3_mean, T2_gt, fg),
+    }
+    tex = {
+        "arm1_full": texture_fidelity(T2_ana_full,  T2_gt, fg),
+        "arm1_zf":   texture_fidelity(T2_ana_zf,    T2_gt, fg),
+        "arm2":      texture_fidelity(T2_arm2_mean, T2_gt, fg),
+        "arm3":      texture_fidelity(T2_arm3_mean, T2_gt, fg),
+    }
+    err2 = np.abs(T2_arm2_mean - T2_gt)
+    err3 = np.abs(T2_arm3_mean - T2_gt)
+    unc = {
+        "arm2": uncertainty_metrics(T2_arm2_std, err2, T2_gt, fg),
+        "arm3": uncertainty_metrics(T2_arm3_std, err3, T2_gt, fg),
+    }
+
+    print(f"  [{pfx}] T2* med(ms):  "
+          f"A1f={rec['arm1_full']['t2_med']:.1f}  "
+          f"A1z={rec['arm1_zf']['t2_med']:.1f}  "
+          f"A2={rec['arm2']['t2_med']:.1f}  "
+          f"A3={rec['arm3']['t2_med']:.1f}")
+    print(f"  [{pfx}] tex-corr:     "
+          f"A1f={tex['arm1_full']:.3f}  "
+          f"A1z={tex['arm1_zf']:.3f}  "
+          f"A2={tex['arm2']:.3f}  "
+          f"A3={tex['arm3']:.3f}")
+    print(f"  [{pfx}] unc rho:      "
+          f"A2={unc['arm2']['rho']:.3f} bnd/int={unc['arm2']['bnd_int']:.2f}  "
+          f"A3={unc['arm3']['rho']:.3f} bnd/int={unc['arm3']['bnd_int']:.2f}")
+
+    return dict(R=R, mtype=tmap["mtype"], rec=rec, tex=tex, unc=unc,
+                _arrays=dict(T2_gt=T2_gt, T2_ana_full=T2_ana_full,
+                             T2_ana_zf=T2_ana_zf, T2_arm2=T2_arm2_mean,
+                             T2_arm3=T2_arm3_mean, std_arm2=T2_arm2_std,
+                             std_arm3=T2_arm3_std, fg=fg))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SINGLE CONDITION RUNNER
+# PART 5 — AGGREGATION HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def run_condition(cond: str, tag: str,
-                  S0_gt: np.ndarray, T2s_gt: np.ndarray,
-                  fg_mask: np.ndarray, data: dict,
-                  n_epochs: int, device: torch.device,
-                  TEs_ms: list[float] = TEs_MS) -> dict:
-    """
-    Run N_SEEDS models for one condition on pre-built data.
-    Uses SAME data dict (kspace_under, mask_2d, zf_mag) across conditions.
-    Returns metrics keyed by best-seed T2* (consistent with prior experiments).
-    """
-    n_echoes = len(TEs_ms)
-    k_under_tc = torch.from_numpy(data["kspace_under"]).to(torch.complex64)
-    mask_tc    = torch.from_numpy(data["mask_2d"])
+def _avg(results: list[dict], R: int, mtype: str, arm: str, metric: str) -> float:
+    vals = [r["rec"][arm][metric] for r in results if r["R"] == R and r["mtype"] == mtype]
+    return float(np.mean(vals)) if vals else float("nan")
 
-    seed_T2: list[np.ndarray] = []
-    seed_m: list[dict]        = []
-    seed_loss: list[float]    = []
 
-    for seed in range(N_SEEDS):
-        torch.manual_seed(seed); np.random.seed(seed); random.seed(seed)
+def _avg_tex(results: list[dict], R: int, mtype: str, arm: str) -> float:
+    vals = [r["tex"][arm] for r in results if r["R"] == R and r["mtype"] == mtype]
+    return float(np.mean(vals)) if vals else float("nan")
 
-        if cond == "3p-complex":
-            zf_arr   = _make_complex_zf_input(data["kspace_under"])  # [2*n_echoes, H, W]
-            zf_input = torch.from_numpy(zf_arr).unsqueeze(0)
-            model    = BottleneckNet3(n_echoes, HIDDEN, T2_MIN, T2_MAX, DF_BOUND, complex_input=True)
-            model, fl = train_3param(model, zf_input, k_under_tc, mask_tc, TEs_ms,
-                                     n_epochs=n_epochs, lr=1e-3, device=device,
-                                     label=f"{tag} s={seed}")
-            _, T2_p, _ = predict_3param(model, zf_input, device)
-        else:
-            zf_arr   = data["zf_mag"]                                # [n_echoes, H, W]
-            zf_input = torch.from_numpy(zf_arr).unsqueeze(0)
-            model    = BottleneckNet(n_echoes, HIDDEN, T2_MIN, T2_MAX)
-            loss_fn  = kspace_mag_loss if cond == "2p-mag" else kspace_consistency_loss
-            model, fl = _train_2param(model, zf_input, k_under_tc, mask_tc, TEs_ms,
-                                      loss_fn=loss_fn, n_epochs=n_epochs, lr=1e-3,
-                                      device=device, label=f"{tag} s={seed}")
-            _, T2_p = predict_from_model(model, zf_input, device)
 
-        m = t2_metrics(T2_p, T2s_gt, fg_mask)
-        seed_T2.append(T2_p); seed_m.append(m); seed_loss.append(fl)
-        print(f"      seed={seed}  T2*_med={m['t2_med']:.2f} ms  loss={fl:.5f}")
+def _avg_unc(results: list[dict], R: int, mtype: str, arm: str, metric: str) -> float:
+    vals = [r["unc"][arm][metric] for r in results if r["R"] == R and r["mtype"] == mtype]
+    return float(np.mean(vals)) if vals else float("nan")
 
-    # Cross-seed T2* std (identifiability)
-    t2_stack  = np.stack(seed_T2, axis=0)
-    cs_fg     = t2_stack[:, fg_mask].std(axis=0)
 
-    # Best-seed metric for the table (same convention as run_gate / run_offres_fix)
-    best  = int(np.argmin([m["t2_med"] for m in seed_m]))
-    m_rep = seed_m[best]
+# ═══════════════════════════════════════════════════════════════════════════════
+# PART 6 — FIGURES
+# ═══════════════════════════════════════════════════════════════════════════════
 
-    return dict(
-        t2_med     = m_rep["t2_med"],
-        t2_p95     = m_rep["t2_p95"],
-        mean_loss  = float(np.mean(seed_loss)),
-        t2_cs_mean = float(cs_fg.mean()),
+def save_recovery_figure(results: list[dict]) -> None:
+    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+    fig.suptitle(
+        "Attribution: T2* recovery and texture-fidelity × R\n"
+        "A1-Full=analytical(full-data), A1-ZF=analytical(ZF), "
+        "A2=physics-grounded(self-supervised), A3=no-physics(supervised GT)",
+        fontsize=9,
     )
+    Rs = ACCEL_SWEEP
+    arm_styles = {
+        "arm1_full": ("A1-Full", "k-",  2.5),
+        "arm1_zf":   ("A1-ZF",  "k--", 1.5),
+        "arm2":      ("A2",     "b-",  2.0),
+        "arm3":      ("A3",     "r--", 2.0),
+    }
+    unc_styles = {
+        "arm2": ("A2 ρ", "b:", 1.4),
+        "arm3": ("A3 ρ", "r:", 1.4),
+    }
+    for col, mtype in enumerate(["phantom", "textured"]):
+        ax0 = axes[0, col]
+        for arm, (lbl, ls, lw) in arm_styles.items():
+            meds = [_avg(results, R, mtype, arm, "t2_med") for R in Rs]
+            ax0.plot(Rs, meds, ls, lw=lw, label=lbl, marker="o", ms=5)
+        ax0.set_xlabel("R"); ax0.set_ylabel("T2* median error (ms)")
+        ax0.set_title(f"{mtype.capitalize()} — T2* median error")
+        ax0.set_xticks(Rs); ax0.legend(fontsize=7); ax0.grid(True, alpha=0.3)
+        try:
+            ax0.set_yscale("log")
+        except Exception:
+            pass
+
+        ax1 = axes[1, col]
+        for arm, (lbl, ls, lw) in arm_styles.items():
+            texs = [_avg_tex(results, R, mtype, arm) for R in Rs]
+            ax1.plot(Rs, texs, ls, lw=lw, label=lbl, marker="o", ms=5)
+        for arm, (lbl, ls, lw) in unc_styles.items():
+            rhos = [_avg_unc(results, R, mtype, arm, "rho") for R in Rs]
+            ax1.plot(Rs, rhos, ls, lw=lw, alpha=0.75, label=lbl, marker="s", ms=4)
+        ax1.axhline(0, color="k", ls="--", lw=0.8)
+        ax1.set_xlabel("R"); ax1.set_ylabel("correlation")
+        ax1.set_title(f"{mtype.capitalize()} — texture fidelity (solid) + Spearman ρ (dotted)")
+        ax1.set_xticks(Rs); ax1.legend(fontsize=6.5); ax1.grid(True, alpha=0.3)
+
+    fig.tight_layout()
+    out = RESULTS_DIR / "attribution_recovery.png"
+    fig.savefig(out, dpi=120, bbox_inches="tight"); plt.close(fig)
+    print(f"  → {out.name}")
+
+
+def save_spatial_figure(res: dict) -> None:
+    arr   = res["_arrays"]
+    mtype = res["mtype"]; R = res["R"]
+    vmax  = float(arr["T2_gt"].max()) + 5.0
+
+    fig, axes = plt.subplots(2, 5, figsize=(22, 9))
+    fig.suptitle(
+        f"Attribution spatial — {mtype}, R={R}\n"
+        "Top: T2* maps  Bottom: |error| (rows 1-4) and A2std/A3std ratio (col 5)",
+        fontsize=9,
+    )
+    top_titles = ["GT T2*", "A1-Full\n(analytical)", "A1-ZF\n(analytical ZF)",
+                  "A2 physics-grounded\n(self-supervised)", "A3 no-physics\n(supervised GT)"]
+    top_imgs   = [arr["T2_gt"], arr["T2_ana_full"], arr["T2_ana_zf"],
+                  arr["T2_arm2"], arr["T2_arm3"]]
+    for ax, title, img in zip(axes[0], top_titles, top_imgs):
+        im = ax.imshow(img, vmin=0, vmax=vmax, cmap="viridis", origin="upper")
+        ax.set_title(title, fontsize=8); ax.axis("off")
+        plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    bot_titles = ["|err| A1-Full", "|err| A1-ZF", "|err| A2", "|err| A3",
+                  "A2-std / A3-std\n(>1 = A2 more uncertain)"]
+    bot_imgs   = [
+        np.abs(arr["T2_ana_full"] - arr["T2_gt"]),
+        np.abs(arr["T2_ana_zf"]   - arr["T2_gt"]),
+        np.abs(arr["T2_arm2"]     - arr["T2_gt"]),
+        np.abs(arr["T2_arm3"]     - arr["T2_gt"]),
+        arr["std_arm2"] / (arr["std_arm3"] + 1e-4),
+    ]
+    bot_vmaxs = [30, 30, 30, 30, 3.0]
+    bot_cmaps = ["hot", "hot", "hot", "hot", "RdBu_r"]
+    for ax, title, img, vm, cm in zip(axes[1], bot_titles, bot_imgs, bot_vmaxs, bot_cmaps):
+        im = ax.imshow(img, vmin=0, vmax=vm, cmap=cm, origin="upper")
+        ax.set_title(title, fontsize=8); ax.axis("off")
+        plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    fig.tight_layout()
+    out = RESULTS_DIR / f"attribution_{mtype}_R{R}.png"
+    fig.savefig(out, dpi=110, bbox_inches="tight"); plt.close(fig)
+    print(f"  → {out.name}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# VERDICT + TABLE
+# PART 7 — VERDICT TABLES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def print_table_and_verdict(table: dict[tuple[int, str], dict],
-                             run_regression: bool) -> str:
-    """
-    table keys: (df_max, cond)
-    cond ∈ {"2p-complex", "3p-complex", "2p-mag", "2p-complex-bug"}
-    """
-    print("\n" + "═" * 82)
-    print("ATTRIBUTION EXPERIMENT — COMPARISON TABLE")
-    print("  Bug-fixed data: conditions (1)(2)(3).  Buggy data: regression (R).")
-    print("═" * 82)
-
-    hdr  = f"  {'df':>6}  {'Condition':<28}  {'T2* med':>8}  {'T2* p95':>8}  {'Loss':>9}  {'T2* Xseed':>10}"
-    unit = f"  {'Hz':>6}  {'':28}  {'(ms)':>8}  {'(ms)':>8}  {'(norm)':>9}  {'(ms μ)':>10}"
-    print(hdr); print(unit); print("  " + "─" * 78)
-
-    def row(df_max, cond):
-        r = table.get((df_max, cond))
-        if r is None:
-            return
-        print(f"  {df_max:>6}  {COND_LABELS[cond]:<28}  "
-              f"{r['t2_med']:>8.2f}  {r['t2_p95']:>8.2f}  "
-              f"{r['mean_loss']:>9.5f}  {r['t2_cs_mean']:>10.3f}")
-
-    all_conds = ["2p-complex", "3p-complex", "2p-mag"]
-    for df_max in OFFRES_LEVELS:
-        print(f"  {'─'*78}")
-        for cond in all_conds:
-            row(df_max, cond)
-        if run_regression and df_max > 0:
-            row(df_max, "2p-complex-bug")
-
-    print("  " + "═" * 78)
-
-    # ── attribution verdicts ──────────────────────────────────────────────────
-    # Threshold: T2* med > 5 ms = "meaningfully degraded" for the attribution test.
-    # Rationale: 2-param df=0 control is ~1 ms; 5× = 5 ms is a clear signal,
-    # distinct from run-to-run noise and from the 3-param's ~1-3 ms range.
-    DEGR_THRESH = 5.0   # ms
-
-    r1_0  = table.get((0,   "2p-complex"), {})
-    r1_20 = table.get((20,  "2p-complex"), {})
-    r1_50 = table.get((50,  "2p-complex"), {})
-    r1_100= table.get((100, "2p-complex"), {})
-    r3_20 = table.get((20,  "2p-mag"),     {})
-    r3_50 = table.get((50,  "2p-mag"),     {})
-    r_reg = table.get((20,  "2p-complex-bug"), {})
-
-    ctrl  = r1_0.get("t2_med", 0.0)
-
-    cond1_ok_20  = r1_20.get("t2_med", 999) < DEGR_THRESH
-    cond1_ok_50  = r1_50.get("t2_med", 999) < DEGR_THRESH
-    cond3_ok_20  = r3_20.get("t2_med", 999) < DEGR_THRESH
-    cond3_ok_50  = r3_50.get("t2_med", 999) < DEGR_THRESH
-
-    print(f"\n  ATTRIBUTION ANALYSIS")
-    print(f"  Degradation threshold: T2* med > {DEGR_THRESH:.0f} ms = meaningful degradation")
-    print(f"  df=0 control (2p-complex): T2* med = {ctrl:.2f} ms\n")
-
-    print(f"  df=20 Hz: 2p-complex  T2* = {r1_20.get('t2_med',0):.2f} ms "
-          f"→ {'OK (< {:.0f} ms)'.format(DEGR_THRESH) if cond1_ok_20 else 'DEGRADED (≥ {:.0f} ms)'.format(DEGR_THRESH)}")
-    print(f"  df=20 Hz: 2p-mag      T2* = {r3_20.get('t2_med',0):.2f} ms "
-          f"→ {'OK' if cond3_ok_20 else 'DEGRADED'}")
-    print(f"  df=50 Hz: 2p-complex  T2* = {r1_50.get('t2_med',0):.2f} ms "
-          f"→ {'OK' if cond1_ok_50 else 'DEGRADED'}")
-    print(f"  df=50 Hz: 2p-mag      T2* = {r3_50.get('t2_med',0):.2f} ms "
-          f"→ {'OK' if cond3_ok_50 else 'DEGRADED'}")
-
-    if run_regression:
-        reg_val = r_reg.get("t2_med", 0.0)
-        print(f"\n  REGRESSION (buggy data, df=20 Hz): T2* = {reg_val:.2f} ms "
-              f"(target ≈ 41 ms — {'CONFIRMED' if reg_val > 30.0 else 'NOT reproduced'})")
-
-    print()
-    if cond1_ok_20 and cond1_ok_50:
-        verdict = (
-            "IT WAS THE BUG — 2-param complex-loss model (cond 1) recovers T2* "
-            "correctly at physical df levels (≤50 Hz). The 51× failure in "
-            "run_mismatch.py was entirely due to the 1000× phase bug, not an "
-            "inherent incompatibility between the mono-exp model and off-resonance. "
-            "Df DOF is a useful field-map bonus but NOT required for T2* recovery."
-        )
-    else:
-        # cond(1) degrades — check mechanism
-        if cond3_ok_20:
-            verdict = (
-                "COMPLETION NECESSARY + MECHANISM IDENTIFIED — 2-param complex-loss "
-                "(cond 1) shows degraded T2* at physical df, but 2-param magnitude-loss "
-                "(cond 3) recovers correctly. The failure is NOT lost T2* information: "
-                "amplitude decay is still encoded in the k-space magnitudes. The failure "
-                "is the complex DC loss demanding a phase the mono-exp model cannot produce, "
-                "biasing T2* to compensate. TWO valid fixes exist: (a) add Df DOF "
-                "[cond 2], or (b) use a phase-insensitive loss [cond 3]."
-            )
-        else:
-            verdict = (
-                "COMPLETION NECESSARY (information loss) — both cond(1) complex and "
-                "cond(3) magnitude loss show T2* degradation. The phase modulation "
-                "at these df levels distorts the k-space magnitude spectrum itself, "
-                "so T2* amplitude information is corrupted regardless of loss function. "
-                "Adding Df DOF [cond 2] is the only clean fix."
-            )
-
-    # Wrap at 80 chars
+def print_verdict(results: list[dict]) -> str:
     import textwrap
-    print("  VERDICT:")
-    for line in textwrap.wrap(verdict, width=76):
-        print(f"    {line}")
-    print("═" * 82 + "\n")
-    return verdict
+
+    # ── closure helpers ───────────────────────────────────────────────────────
+    def agg(mtype: str, Rs: list[int], arm: str, metric: str) -> float:
+        vals = [_avg(results, R, mtype, arm, metric) for R in Rs]
+        clean = [v for v in vals if np.isfinite(v)]
+        return float(np.mean(clean)) if clean else float("nan")
+
+    def agg_tex(mtype: str, Rs: list[int], arm: str) -> float:
+        vals = [_avg_tex(results, R, mtype, arm) for R in Rs]
+        clean = [v for v in vals if np.isfinite(v)]
+        return float(np.mean(clean)) if clean else float("nan")
+
+    def agg_unc(mtype: str, Rs: list[int], arm: str, metric: str) -> float:
+        vals = [_avg_unc(results, R, mtype, arm, metric) for R in Rs]
+        clean = [v for v in vals if np.isfinite(v)]
+        return float(np.mean(clean)) if clean else float("nan")
+
+    R_low  = [R for R in ACCEL_SWEEP if R <= 2]
+    R_high = [R for R in ACCEL_SWEEP if R > 2]
+    Rs_all = ACCEL_SWEEP
+
+    print("\n" + "═" * 120)
+    print("ATTRIBUTION VERDICT TABLES")
+    print("═" * 120)
+
+    # ── TABLE A: Recovery ─────────────────────────────────────────────────────
+    for mtype in ["phantom", "textured"]:
+        print(f"\n  TABLE A — T2* median error (ms)  [{mtype.upper()}]")
+        print(f"  {'R':>3}  {'A1-Full':>9}  {'A1-ZF':>9}  {'A2-phys':>9}  {'A3-bb':>9}"
+              f"  {'A2-p95':>9}  {'A3-p95':>9}")
+        print(f"  {'─'*3}  {'─'*9}  {'─'*9}  {'─'*9}  {'─'*9}  {'─'*9}  {'─'*9}")
+        for R in ACCEL_SWEEP:
+            print(f"  {R:>3}  "
+                  f"{_avg(results,R,mtype,'arm1_full','t2_med'):>9.2f}  "
+                  f"{_avg(results,R,mtype,'arm1_zf',  't2_med'):>9.2f}  "
+                  f"{_avg(results,R,mtype,'arm2',     't2_med'):>9.2f}  "
+                  f"{_avg(results,R,mtype,'arm3',     't2_med'):>9.2f}  "
+                  f"{_avg(results,R,mtype,'arm2',     't2_p95'):>9.2f}  "
+                  f"{_avg(results,R,mtype,'arm3',     't2_p95'):>9.2f}")
+
+    # ── TABLE B: Texture fidelity ─────────────────────────────────────────────
+    for mtype in ["phantom", "textured"]:
+        print(f"\n  TABLE B — Texture fidelity (Pearson r, HF band)  [{mtype.upper()}]")
+        print(f"  {'R':>3}  {'A1-Full':>9}  {'A1-ZF':>9}  {'A2-phys':>9}  {'A3-bb':>9}")
+        print(f"  {'─'*3}  {'─'*9}  {'─'*9}  {'─'*9}  {'─'*9}")
+        for R in ACCEL_SWEEP:
+            print(f"  {R:>3}  "
+                  f"{_avg_tex(results,R,mtype,'arm1_full'):>9.4f}  "
+                  f"{_avg_tex(results,R,mtype,'arm1_zf'):>9.4f}  "
+                  f"{_avg_tex(results,R,mtype,'arm2'):>9.4f}  "
+                  f"{_avg_tex(results,R,mtype,'arm3'):>9.4f}")
+
+    # ── TABLE C: Uncertainty quality ─────────────────────────────────────────
+    for mtype in ["phantom", "textured"]:
+        print(f"\n  TABLE C — Uncertainty quality  [{mtype.upper()}]")
+        print(f"  {'R':>3}  {'A2 ρ':>8}  {'A2 bnd/int':>11}  {'A3 ρ':>8}  {'A3 bnd/int':>11}"
+              f"  {'Δρ(A2-A3)':>11}")
+        print(f"  {'─'*3}  {'─'*8}  {'─'*11}  {'─'*8}  {'─'*11}  {'─'*11}")
+        for R in ACCEL_SWEEP:
+            a2r = _avg_unc(results, R, mtype, "arm2", "rho")
+            a3r = _avg_unc(results, R, mtype, "arm3", "rho")
+            a2b = _avg_unc(results, R, mtype, "arm2", "bnd_int")
+            a3b = _avg_unc(results, R, mtype, "arm3", "bnd_int")
+            print(f"  {R:>3}  {a2r:>8.4f}  {a2b:>11.3f}  {a3r:>8.4f}  {a3b:>11.3f}"
+                  f"  {a2r-a3r:>+11.4f}")
+
+    # ── KEY QUESTIONS ─────────────────────────────────────────────────────────
+    print("\n" + "─" * 120)
+    print("  KEY QUESTIONS")
+    print("─" * 120)
+
+    print("\n  Q1: At R=1, does ARM1_FULL (noise-only limit) beat the trained networks?")
+    for mtype in ["phantom", "textured"]:
+        a1f = _avg(results, 1, mtype, "arm1_full", "t2_med")
+        a2  = _avg(results, 1, mtype, "arm2",      "t2_med")
+        a3  = _avg(results, 1, mtype, "arm3",      "t2_med")
+        print(f"    {mtype}: A1-Full={a1f:.2f}  A2={a2:.2f}  A3={a3:.2f} ms  → "
+              + ("A1-FULL BEST (all information available; network overhead beats pure math)" if a1f < a2 and a1f < a3
+                 else "NETWORK MATCHES/BEATS A1-FULL at R=1 (deep prior useful even at full sampling)"))
+
+    print("\n  Q2: At R≤2, do ARM2 and ARM3 match (information-constrained regime)?")
+    for mtype in ["phantom", "textured"]:
+        a2 = agg(mtype, R_low, "arm2", "t2_med")
+        a3 = agg(mtype, R_low, "arm3", "t2_med")
+        delta = abs(a2 - a3)
+        print(f"    {mtype} (R≤2): A2={a2:.2f}  A3={a3:.2f}  Δ={delta:.2f} ms  → "
+              + ("MATCH (<3 ms) — recovery limited by measurement, not physics grounding"
+                 if delta < 3.0
+                 else "DIVERGE (≥3 ms) — physics grounding adds recoverable information at R≤2"))
+
+    print("\n  Q3: At R>2, does ARM3 (no-physics, supervised) also fabricate texture?")
+    for mtype in ["textured"]:
+        a2 = agg_tex(mtype, R_high, "arm2")
+        a3 = agg_tex(mtype, R_high, "arm3")
+        print(f"    {mtype} (R>2): A2 tex-r={a2:.4f}  A3 tex-r={a3:.4f}  → "
+              + ("BOTH FABRICATE (tex-r < 0.5) — blind spot is GENERAL, not physics-specific"
+                 if a2 < 0.5 and a3 < 0.5
+                 else "ONE FABRICATES MORE — "
+                      + ("physics grounding mitigates fabrication" if a2 > a3
+                         else "supervised arm recovers texture better (label advantage dominates)")))
+
+    print("\n  Q4: Does physics grounding improve uncertainty ranking over no-physics arm?")
+    for mtype in ["phantom", "textured"]:
+        a2r = agg_unc(mtype, Rs_all, "arm2", "rho")
+        a3r = agg_unc(mtype, Rs_all, "arm3", "rho")
+        delta = a2r - a3r
+        print(f"    {mtype}: A2 ρ={a2r:.4f}  A3 ρ={a3r:.4f}  Δρ={delta:+.4f}  → "
+              + ("PHYSICS WINS (Δρ > 0.05) — forward operator informs uncertainty structure"
+                 if delta > 0.05
+                 else "ARCHITECTURE (|Δρ| ≤ 0.05) — MC-dropout, not physics, drives ranking quality"))
+
+    # ── PER-CLAIM ATTRIBUTION VERDICT ─────────────────────────────────────────
+    print("\n" + "═" * 120)
+    print("  PER-CLAIM ATTRIBUTION VERDICT")
+    print("═" * 120)
+
+    # aggregate numbers for verdict text
+    a2_lo = float(np.mean([agg(m, R_low, "arm2", "t2_med") for m in ["phantom","textured"]]))
+    a3_lo = float(np.mean([agg(m, R_low, "arm3", "t2_med") for m in ["phantom","textured"]]))
+    a2_hi_tex = float(np.mean([agg_tex(m, R_high, "arm2") for m in ["phantom","textured"]]))
+    a3_hi_tex = float(np.mean([agg_tex(m, R_high, "arm3") for m in ["phantom","textured"]]))
+    drho_list = [agg_unc(m, Rs_all, "arm2", "rho") - agg_unc(m, Rs_all, "arm3", "rho")
+                 for m in ["phantom", "textured"]]
+    drho_mean = float(np.mean(drho_list))
+
+    claim1 = (
+        f"CLAIM 1 — IDENTIFIABILITY AT R≤{max(R_low)}: "
+        f"ARM2 (physics-grounded, label-free) achieves T2* median {a2_lo:.2f} ms vs "
+        f"ARM3 (no-physics, supervised GT) {a3_lo:.2f} ms at R≤{max(R_low)}. "
+        f"Δ = {abs(a2_lo-a3_lo):.2f} ms. "
+        + ("ATTRIBUTION: INFORMATION LIMIT — at low R the measurement constrains recovery "
+           "equally for both arms. Physics grounding provides self-supervision (no GT needed) "
+           "but does not add recoverable information beyond what the data contain."
+           if abs(a2_lo-a3_lo) < 3.0
+           else "ATTRIBUTION: PHYSICS-SPECIFIC — the forward operator adds information even at R≤2; "
+                "self-supervision outperforms supervised arm that lacks the physics prior.")
+    )
+
+    blind_verdict = (
+        "ATTRIBUTION: GENERAL INFORMATION LIMIT — any method (physics-grounded or pure regression) "
+        "fabricates T2* texture when undersampling removes more than ~50% of k-space. "
+        "The failure is not physics-specific; a reviewer claiming physics grounding avoids fabrication "
+        "at high R is wrong."
+        if a2_hi_tex < 0.5 and a3_hi_tex < 0.5
+        else (
+            "ATTRIBUTION: PHYSICS-MITIGATED — physics grounding partially reduces fabrication "
+            f"(A2 tex-r={a2_hi_tex:.3f} vs A3 tex-r={a3_hi_tex:.3f})."
+            if a2_hi_tex > a3_hi_tex
+            else "ATTRIBUTION: LABEL ADVANTAGE — supervised arm recovers more texture at high R "
+                 "(GT label signal overrides information limit). Physics grounding shows no advantage."
+        )
+    )
+    claim2 = (
+        f"CLAIM 2 — DETECTION BLIND SPOT AT R>{min(R_high)}: "
+        f"A2 tex-r={a2_hi_tex:.3f}  A3 tex-r={a3_hi_tex:.3f}. "
+        + blind_verdict
+    )
+
+    unc_verdict = (
+        f"ATTRIBUTION: ARCHITECTURE + MC-DROPOUT — Spearman ρ is statistically "
+        f"similar between ARM2 and ARM3 (mean Δρ = {drho_mean:+.4f}, |Δρ| ≤ 0.05). "
+        "Ranking-calibrated abstention is a property of the MC-dropout architecture, "
+        "independent of physics grounding. The claim can be made for the architecture, "
+        "not exclusively for the physics prior."
+        if abs(drho_mean) <= 0.05
+        else (
+            f"ATTRIBUTION: PHYSICS GROUNDING — ARM2 improves Spearman ρ by {drho_mean:+.4f} "
+            "over ARM3 (>0.05 margin). The forward operator informs uncertainty structure "
+            "beyond what dropout alone provides."
+            if drho_mean > 0
+            else f"ATTRIBUTION: LABEL ADVANTAGE — supervised ARM3 achieves higher Spearman ρ "
+                 f"than physics-grounded ARM2 (Δρ = {drho_mean:+.4f}). GT labels during training "
+                 "produce better-ranked uncertainty."
+        )
+    )
+    claim3 = (
+        f"CLAIM 3 — RANKING-CALIBRATED ABSTENTION: mean Δρ(ARM2−ARM3) = {drho_mean:+.4f}. "
+        + unc_verdict
+    )
+
+    verdict_str = "\n\n".join([claim1, claim2, claim3])
+    for ci, claim in enumerate([claim1, claim2, claim3], 1):
+        print(f"\n  CLAIM {ci}:")
+        for line in textwrap.wrap(claim, width=115):
+            print(f"    {line}")
+
+    print("\n" + "═" * 120)
+    return verdict_str
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 
+class _NpEnc(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray): return obj.tolist()
+        if isinstance(obj, np.bool_):   return bool(obj)
+        if isinstance(obj, np.integer): return int(obj)
+        try:
+            return float(obj)
+        except Exception:
+            return super().default(obj)
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs",        type=int,  default=400)
-    parser.add_argument("--no-regression", action="store_true",
-                        help="Skip the buggy-data regression anchor")
-    args = parser.parse_args()
+    torch.manual_seed(SEED); np.random.seed(SEED); random.seed(SEED)
 
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
-    elif torch.cuda.is_available():
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
+    device = (torch.device("mps")  if torch.backends.mps.is_available() else
+              torch.device("cuda") if torch.cuda.is_available() else
+              torch.device("cpu"))
 
-    print(f"\nDevice: {device},  Epochs: {args.epochs},  SNR: {SNR_DB} dB")
-    print(f"Seeds: {N_SEEDS},  Phantom: {H}×{W}")
-    print(f"Conditions: {list(COND_LABELS.keys())[:3]} + {'regression' if not args.no_regression else 'NO regression'}")
+    print(f"\nDevice: {device}")
+    print(f"R sweep: {ACCEL_SWEEP}   TRAIN_EPOCHS={TRAIN_EPOCHS}   N_MC={N_MC}")
+    print("ARM 2: physics-grounded (k-space DC loss, self-supervised)")
+    print("ARM 3: no-physics black-box (supervised MSE to GT maps, steelmanned)\n")
 
-    # ── phantom — shared across ALL conditions and df levels ──────────────────
-    S0_gt, T2s_gt, labels = make_phantom(H, W)
-    fg_mask = labels > 0
-    print(f"GT T2* range: [{T2s_gt[fg_mask].min():.0f}, {T2s_gt[fg_mask].max():.0f}] ms, "
-          f"fg pixels: {fg_mask.sum()}\n")
+    RESULTS_DIR.mkdir(exist_ok=True)
 
-    table: dict[tuple[int, str], dict] = {}
+    print("Loading maps …")
+    maps = load_maps()
+    print(f"  phantom: {len(maps['phantom'])}   textured: {len(maps['textured'])}\n")
 
-    for df_max in OFFRES_LEVELS:
-        print(f"\n{'═'*72}")
-        print(f"df_max = {df_max} Hz")
-        print(f"{'═'*72}")
+    results: list[dict] = []
+    saved_fig: set = set()
 
-        # ── single bug-fixed data instance — SAME for all 3 conditions ────────
-        data_fixed = make_data(S0_gt, T2s_gt, df_max, TEs_MS, bugfix_phase=True)
-        max_phase  = 2 * 3.14159 * df_max * TEs_MS[-1] / 1000.0
-        print(f"  Max phase @ TE={TEs_MS[-1]} ms: {max_phase:.2f} rad "
-              f"= {max_phase/(2*3.14159):.2f} cycles\n")
+    for mtype in ["phantom", "textured"]:
+        for R in ACCEL_SWEEP:
+            print(f"\n{'─'*60}\n{mtype.upper()}  R = {R}\n{'─'*60}")
+            for mi, tmap in enumerate(maps[mtype]):
+                res = run_condition(tmap, R, device, mi)
+                results.append(res)
+                key = (mtype, R)
+                if key not in saved_fig:
+                    save_spatial_figure(res)
+                    saved_fig.add(key)
 
-        for cond in ["2p-complex", "3p-complex", "2p-mag"]:
-            print(f"  ── {COND_LABELS[cond]} ──")
-            r = run_condition(cond, f"df{df_max}_{cond}",
-                              S0_gt, T2s_gt, fg_mask,
-                              data_fixed, args.epochs, device)
-            table[(df_max, cond)] = r
-            print()
+    save_recovery_figure(results)
+    verdict = print_verdict(results)
 
-        # ── regression anchor on BUGGY data (skip df=0 — identical to fixed) ──
-        if not args.no_regression and df_max > 0:
-            print(f"  ── {COND_LABELS['2p-complex-bug']} ──")
-            data_buggy = make_data(S0_gt, T2s_gt, df_max, TEs_MS, bugfix_phase=False)
-            r = run_condition("2p-complex", f"df{df_max}_bug",
-                              S0_gt, T2s_gt, fg_mask,
-                              data_buggy, args.epochs, device)
-            table[(df_max, "2p-complex-bug")] = r
-            print()
-
-    print_table_and_verdict(table, run_regression=not args.no_regression)
+    # strip raw arrays before serialising
+    results_clean = [{k: v for k, v in r.items() if k != "_arrays"} for r in results]
+    with open(RESULTS_DIR / "attribution.json", "w") as f:
+        json.dump(dict(results=results_clean, verdict=verdict), f, indent=2, cls=_NpEnc)
+    print("\n  → attribution.json")
 
 
 if __name__ == "__main__":
