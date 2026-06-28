@@ -1,0 +1,89 @@
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE FIX EXPERIMENT
+════════════════════════════════════════════════════════════════════════════════
+  FIX 1:  phi0 = angle(IFFT(k_ZF))  — fixed analytical static phase
+  FIX 2:  multi-coil ESPIRiT — SKIPPED (already coil-combined)
+  METRIC: image=S0·exp(-TE/T2*); DC_res=complex_echo; gate=sqrt(L2_loss)
+  Device: mps  |  GATE_EPOCHS=200  REPRO_EPOCHS=100
+  Gate threshold: 0.08  (noise floor ≈ 0.032 at 30 dB SNR)
+
+Loading data …
+  Loaded file1000126.h5 slice=16  fg=16284px  HF-SNR=1.85
+  Loaded file1000153.h5 slice=17  fg=16204px  HF-SNR=1.91
+  Loaded file1000182.h5 slice=19  fg=16148px  HF-SNR=2.58
+
+────────────────────────────────────────────────────────────────────────
+SANITY GATE — FS data (mask=ones, R=1)
+  Metric: sqrt(training_loss) = RMS_diff/RMS_k  (L2, same as loss objective)
+  Threshold: 0.08  (≈ 2× noise floor for 30 dB SNR)
+  GATE_EPOCHS=200
+  NOTE: prior run's 0.83 used FFT(|image|) vs complex k-space — WRONG metric.
+        Corrected metric = sqrt(L2_loss), which was already ~0.062 before fix.
+────────────────────────────────────────────────────────────────────────
+
+  [BEFORE 3-param sl0 file1000126.]
+    [BEFORE sl0 file1000126.] ep   50/200  loss=0.02386
+    [BEFORE sl0 file1000126.] ep  100/200  loss=0.01596
+    [BEFORE sl0 file1000126.] ep  150/200  loss=0.00878
+    [BEFORE sl0 file1000126.] ep  200/200  loss=0.00636
+
+  [AFTER  3-param+phi0 sl0 file1000126.]
+    [AFTER  sl0 file1000126.] ep   50/200  loss=0.01893
+    [AFTER  sl0 file1000126.] ep  100/200  loss=0.01260
+    [AFTER  sl0 file1000126.] ep  150/200  loss=0.00805
+    [AFTER  sl0 file1000126.] ep  200/200  loss=0.00650
+
+  [sl0 file1000126.]  before=0.0797  analytical=1.86e-07  after=0.0806  → FAIL
+
+  [BEFORE 3-param sl1 file1000153.]
+    [BEFORE sl1 file1000153.] ep   50/200  loss=0.02587
+    [BEFORE sl1 file1000153.] ep  100/200  loss=0.01903
+    [BEFORE sl1 file1000153.] ep  150/200  loss=0.00743
+    [BEFORE sl1 file1000153.] ep  200/200  loss=0.00595
+
+  [AFTER  3-param+phi0 sl1 file1000153.]
+    [AFTER  sl1 file1000153.] ep   50/200  loss=0.01839
+    [AFTER  sl1 file1000153.] ep  100/200  loss=0.01104
+    [AFTER  sl1 file1000153.] ep  150/200  loss=0.00348
+    [AFTER  sl1 file1000153.] ep  200/200  loss=0.00279
+
+  [sl1 file1000153.]  before=0.0771  analytical=1.56e-07  after=0.0528  → PASS
+
+  [BEFORE 3-param sl2 file1000182.]
+    [BEFORE sl2 file1000182.] ep   50/200  loss=0.01576
+    [BEFORE sl2 file1000182.] ep  100/200  loss=0.01370
+    [BEFORE sl2 file1000182.] ep  150/200  loss=0.00743
+    [BEFORE sl2 file1000182.] ep  200/200  loss=0.00625
+
+  [AFTER  3-param+phi0 sl2 file1000182.]
+    [AFTER  sl2 file1000182.] ep   50/200  loss=0.00894
+    [AFTER  sl2 file1000182.] ep  100/200  loss=0.00349
+    [AFTER  sl2 file1000182.] ep  150/200  loss=0.00202
+    [AFTER  sl2 file1000182.] ep  200/200  loss=0.00176
+
+  [sl2 file1000182.]  before=0.0791  analytical=1.82e-07  after=0.0419  → PASS
+
+════════════════════════════════════════════════════════════════════════════════
+SANITY GATE — RESULTS
+════════════════════════════════════════════════════════════════════════════════
+
+  FIX 1: phi0 = angle(IFFT(k_full)) — exact FS phase, analytically grounded
+  FIX 2: multi-coil ESPIRiT — SKIPPED (already coil-combined; sigpy unavailable)
+  Metric: sqrt(L2_loss) = RMS_diff/RMS_k  [corrected from prior run's L1/mean]
+  Threshold: 0.08  (2× noise floor for 30 dB SNR ≈ 0.032)
+
+  File                      before   analytical     after  gate
+  ──────────────────────  ────────  ───────────  ────────  ────
+  file1000126.h5            0.0797     1.86e-07    0.0806  FAIL
+  file1000153.h5            0.0771     1.56e-07    0.0528  PASS
+  file1000182.h5            0.0791     1.82e-07    0.0419  PASS
+
+  Mean: before=0.0787  after=0.0584  Δ=0.0202  noise_floor≈0.032
+
+  GATE: FAIL — STOP
+════════════════════════════════════════════════════════════════════════════════
+  → phase_fix_gate.png
+
+  *** GATE FAILED — not proceeding to R sweep ***
+  → phase_fix.json
