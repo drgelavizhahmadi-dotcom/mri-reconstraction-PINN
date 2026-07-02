@@ -1,0 +1,322 @@
+
+════════════════════════════════════════════════════════════════════════════════
+OpenNeuro ds006926 — Two-Branch Multi-Echo Identifiability Repro
+════════════════════════════════════════════════════════════════════════════════
+  Branch A: anat MEGRE magnitude  (10 echoes, no Df, no phi0)
+  Branch B: func complex sbref    (3 echoes, Df + phi0 retained)
+  Device: mps  |  REPRO_EPOCHS=150  A3_EPOCHS=250
+  skimage unwrap: YES
+  Gate: ANALYTICAL — no network training in gate
+
+─── DOWNLOAD (S3 REST API, no credentials) ───
+  Total downloaded this run: 0.000 GB  (0 bytes)
+
+─── DOWNLOAD VERIFICATION ───
+  sub-a01: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a02: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a03: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a04: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a05: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a06: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a07: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a08: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a09: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  sub-a10: anat-TEs=[2.46..79.99] ms  func-TEs=['12.00', '28.97', '45.94'] ms
+  PASS
+
+─── SANITY GATE (analytical OLS, test subjects only) ───
+  Gate-A sub-a09: kres_2p=0.2207  T2*_mean=30.2ms  PASS
+  Gate-A sub-a10: kres_2p=0.1616  T2*_mean=31.9ms  PASS
+  Gate-B sub-a09: kres_2p=1.1152  kres_4p=0.6114  ratio=0.548  Df_mean=-1.2Hz  PASS
+  Gate-B sub-a10: kres_2p=0.9359  kres_4p=0.6657  ratio=0.711  Df_mean=1.4Hz  PASS
+
+════════════════════════════════════════════════════════════════════════════════
+SANITY GATE RESULTS
+════════════════════════════════════════════════════════════════════════════════
+
+  BRANCH A (magnitude, log-linear OLS):
+  Subject        kres_2p    T2*_mean  gate
+  ────────────  ────────  ──────────  ────
+  sub-a09         0.2207       30.2ms  PASS
+  sub-a10         0.1616       31.9ms  PASS
+  Threshold: sqrt(kres_2p) < 0.25  →  BRANCH A: PASS
+
+  BRANCH B (complex, 4-param OLS):
+  Subject        kres_2p   kres_4p    ratio    Df_mean  gate
+  ────────────  ────────  ────────  ───────  ─────────  ────
+  sub-a09         1.1152    0.6114    0.548      -1.2Hz  PASS
+  sub-a10         0.9359    0.6657    0.711       1.4Hz  PASS
+  Thresholds: kres_4p < 0.8, ratio < 0.9  →  BRANCH B: PASS
+  LIMITATION (Branch B): ΔTE≈17ms → unambiguous Df ≈ ±29Hz; voxels with |Df|>29Hz alias.
+════════════════════════════════════════════════════════════════════════════════
+
+  *** BOTH GATES PASSED — proceeding to R sweep ***
+
+─── A3 Training (sub-a01..sub-a08, supervised) ───
+  Training Branch-A A3 (MagNet) …
+    [A3-A] ep   62/250  loss=0.15467
+    [A3-A] ep  124/250  loss=0.06924
+    [A3-A] ep  186/250  loss=0.06760
+    [A3-A] ep  248/250  loss=0.06911
+    [A3-A] ep  250/250  loss=0.06233
+  Training Branch-B A3 (BottleneckNet3MC) …
+    [A3-B] ep   62/250  loss=0.12453
+    [A3-B] ep  124/250  loss=0.13326
+    [A3-B] ep  186/250  loss=0.22287
+    [A3-B] ep  248/250  loss=0.09754
+    [A3-B] ep  250/250  loss=0.22048
+
+────────────────────────────────────────────────────────────
+R = 2
+────────────────────────────────────────────────────────────
+    [A2-A sub-a09 R=2 s0] ep   37/150  loss=0.17465
+    [A2-A sub-a09 R=2 s0] ep   74/150  loss=0.11957
+    [A2-A sub-a09 R=2 s0] ep  111/150  loss=0.10933
+    [A2-A sub-a09 R=2 s0] ep  148/150  loss=0.10646
+    [A2-A sub-a09 R=2 s0] ep  150/150  loss=0.10815
+    [A2-A sub-a09 R=2 s1] ep   37/150  loss=0.18651
+    [A2-A sub-a09 R=2 s1] ep   74/150  loss=0.12489
+    [A2-A sub-a09 R=2 s1] ep  111/150  loss=0.11574
+    [A2-A sub-a09 R=2 s1] ep  148/150  loss=0.11792
+    [A2-A sub-a09 R=2 s1] ep  150/150  loss=0.11595
+  A-sub-a09 R=2: ZF NRMSE=0.1491  A2=0.4169  A3=0.4830  A2-unmeas=0.8855  ρ=0.139
+    [A2-B sub-a09 R=2 s0] ep   37/150  loss=0.21733
+    [A2-B sub-a09 R=2 s0] ep   74/150  loss=0.14467
+    [A2-B sub-a09 R=2 s0] ep  111/150  loss=0.12691
+    [A2-B sub-a09 R=2 s0] ep  148/150  loss=0.12169
+    [A2-B sub-a09 R=2 s0] ep  150/150  loss=0.12129
+    [A2-B sub-a09 R=2 s1] ep   37/150  loss=0.21365
+    [A2-B sub-a09 R=2 s1] ep   74/150  loss=0.13859
+    [A2-B sub-a09 R=2 s1] ep  111/150  loss=0.11043
+    [A2-B sub-a09 R=2 s1] ep  148/150  loss=0.10651
+    [A2-B sub-a09 R=2 s1] ep  150/150  loss=0.10605
+  B-sub-a09 R=2: ZF NRMSE=0.2483  A2=0.2133  A3=0.7150  A2-unmeas=0.8915  ρ=0.301  Df_mean=-1.2Hz
+    [A2-A sub-a10 R=2 s0] ep   37/150  loss=0.11689
+    [A2-A sub-a10 R=2 s0] ep   74/150  loss=0.09148
+    [A2-A sub-a10 R=2 s0] ep  111/150  loss=0.07371
+    [A2-A sub-a10 R=2 s0] ep  148/150  loss=0.07251
+    [A2-A sub-a10 R=2 s0] ep  150/150  loss=0.07010
+    [A2-A sub-a10 R=2 s1] ep   37/150  loss=0.12437
+    [A2-A sub-a10 R=2 s1] ep   74/150  loss=0.09381
+    [A2-A sub-a10 R=2 s1] ep  111/150  loss=0.08784
+    [A2-A sub-a10 R=2 s1] ep  148/150  loss=0.08483
+    [A2-A sub-a10 R=2 s1] ep  150/150  loss=0.08490
+  A-sub-a10 R=2: ZF NRMSE=0.1254  A2=0.3309  A3=0.2306  A2-unmeas=0.8107  ρ=0.203
+    [A2-B sub-a10 R=2 s0] ep   37/150  loss=0.17440
+    [A2-B sub-a10 R=2 s0] ep   74/150  loss=0.13533
+    [A2-B sub-a10 R=2 s0] ep  111/150  loss=0.12386
+    [A2-B sub-a10 R=2 s0] ep  148/150  loss=0.12057
+    [A2-B sub-a10 R=2 s0] ep  150/150  loss=0.12231
+    [A2-B sub-a10 R=2 s1] ep   37/150  loss=0.15520
+    [A2-B sub-a10 R=2 s1] ep   74/150  loss=0.12271
+    [A2-B sub-a10 R=2 s1] ep  111/150  loss=0.11059
+    [A2-B sub-a10 R=2 s1] ep  148/150  loss=0.10856
+    [A2-B sub-a10 R=2 s1] ep  150/150  loss=0.10867
+  B-sub-a10 R=2: ZF NRMSE=0.1910  A2=0.2106  A3=0.6594  A2-unmeas=0.9054  ρ=0.270  Df_mean=2.2Hz
+
+────────────────────────────────────────────────────────────
+R = 4
+────────────────────────────────────────────────────────────
+    [A2-A sub-a09 R=4 s0] ep   37/150  loss=0.15708
+    [A2-A sub-a09 R=4 s0] ep   74/150  loss=0.10021
+    [A2-A sub-a09 R=4 s0] ep  111/150  loss=0.09489
+    [A2-A sub-a09 R=4 s0] ep  148/150  loss=0.09487
+    [A2-A sub-a09 R=4 s0] ep  150/150  loss=0.09707
+    [A2-A sub-a09 R=4 s1] ep   37/150  loss=0.17964
+    [A2-A sub-a09 R=4 s1] ep   74/150  loss=0.11023
+    [A2-A sub-a09 R=4 s1] ep  111/150  loss=0.10012
+    [A2-A sub-a09 R=4 s1] ep  148/150  loss=0.10438
+    [A2-A sub-a09 R=4 s1] ep  150/150  loss=0.10213
+  A-sub-a09 R=4: ZF NRMSE=0.2207  A2=0.4356  A3=0.5028  A2-unmeas=0.9363  ρ=0.211
+    [A2-B sub-a09 R=4 s0] ep   37/150  loss=0.17833
+    [A2-B sub-a09 R=4 s0] ep   74/150  loss=0.11493
+    [A2-B sub-a09 R=4 s0] ep  111/150  loss=0.10296
+    [A2-B sub-a09 R=4 s0] ep  148/150  loss=0.09715
+    [A2-B sub-a09 R=4 s0] ep  150/150  loss=0.09984
+    [A2-B sub-a09 R=4 s1] ep   37/150  loss=0.14419
+    [A2-B sub-a09 R=4 s1] ep   74/150  loss=0.10148
+    [A2-B sub-a09 R=4 s1] ep  111/150  loss=0.08659
+    [A2-B sub-a09 R=4 s1] ep  148/150  loss=0.08199
+    [A2-B sub-a09 R=4 s1] ep  150/150  loss=0.08352
+  B-sub-a09 R=4: ZF NRMSE=0.2713  A2=0.2566  A3=0.7364  A2-unmeas=0.9523  ρ=0.253  Df_mean=-1.4Hz
+    [A2-A sub-a10 R=4 s0] ep   37/150  loss=0.10586
+    [A2-A sub-a10 R=4 s0] ep   74/150  loss=0.08170
+    [A2-A sub-a10 R=4 s0] ep  111/150  loss=0.06282
+    [A2-A sub-a10 R=4 s0] ep  148/150  loss=0.06187
+    [A2-A sub-a10 R=4 s0] ep  150/150  loss=0.06115
+    [A2-A sub-a10 R=4 s1] ep   37/150  loss=0.11053
+    [A2-A sub-a10 R=4 s1] ep   74/150  loss=0.08203
+    [A2-A sub-a10 R=4 s1] ep  111/150  loss=0.07699
+    [A2-A sub-a10 R=4 s1] ep  148/150  loss=0.07892
+    [A2-A sub-a10 R=4 s1] ep  150/150  loss=0.07849
+  A-sub-a10 R=4: ZF NRMSE=0.1830  A2=0.3463  A3=0.2642  A2-unmeas=0.8973  ρ=0.338
+    [A2-B sub-a10 R=4 s0] ep   37/150  loss=0.13070
+    [A2-B sub-a10 R=4 s0] ep   74/150  loss=0.11211
+    [A2-B sub-a10 R=4 s0] ep  111/150  loss=0.09841
+    [A2-B sub-a10 R=4 s0] ep  148/150  loss=0.09653
+    [A2-B sub-a10 R=4 s0] ep  150/150  loss=0.09473
+    [A2-B sub-a10 R=4 s1] ep   37/150  loss=0.12529
+    [A2-B sub-a10 R=4 s1] ep   74/150  loss=0.10292
+    [A2-B sub-a10 R=4 s1] ep  111/150  loss=0.09659
+    [A2-B sub-a10 R=4 s1] ep  148/150  loss=0.09155
+    [A2-B sub-a10 R=4 s1] ep  150/150  loss=0.09156
+  B-sub-a10 R=4: ZF NRMSE=0.2158  A2=0.2374  A3=0.6819  A2-unmeas=0.9648  ρ=0.170  Df_mean=2.0Hz
+
+────────────────────────────────────────────────────────────
+R = 8
+────────────────────────────────────────────────────────────
+    [A2-A sub-a09 R=8 s0] ep   37/150  loss=0.14450
+    [A2-A sub-a09 R=8 s0] ep   74/150  loss=0.09034
+    [A2-A sub-a09 R=8 s0] ep  111/150  loss=0.08648
+    [A2-A sub-a09 R=8 s0] ep  148/150  loss=0.08651
+    [A2-A sub-a09 R=8 s0] ep  150/150  loss=0.08853
+    [A2-A sub-a09 R=8 s1] ep   37/150  loss=0.16940
+    [A2-A sub-a09 R=8 s1] ep   74/150  loss=0.10194
+    [A2-A sub-a09 R=8 s1] ep  111/150  loss=0.09250
+    [A2-A sub-a09 R=8 s1] ep  148/150  loss=0.09857
+    [A2-A sub-a09 R=8 s1] ep  150/150  loss=0.09440
+  A-sub-a09 R=8: ZF NRMSE=0.2503  A2=0.4400  A3=0.5204  A2-unmeas=0.9466  ρ=0.183
+    [A2-B sub-a09 R=8 s0] ep   37/150  loss=0.15705
+    [A2-B sub-a09 R=8 s0] ep   74/150  loss=0.09779
+    [A2-B sub-a09 R=8 s0] ep  111/150  loss=0.08135
+    [A2-B sub-a09 R=8 s0] ep  148/150  loss=0.07836
+    [A2-B sub-a09 R=8 s0] ep  150/150  loss=0.07751
+    [A2-B sub-a09 R=8 s1] ep   37/150  loss=0.13019
+    [A2-B sub-a09 R=8 s1] ep   74/150  loss=0.08306
+    [A2-B sub-a09 R=8 s1] ep  111/150  loss=0.06998
+    [A2-B sub-a09 R=8 s1] ep  148/150  loss=0.06581
+    [A2-B sub-a09 R=8 s1] ep  150/150  loss=0.06662
+  B-sub-a09 R=8: ZF NRMSE=0.3035  A2=0.2741  A3=0.7527  A2-unmeas=0.9738  ρ=0.236  Df_mean=-1.5Hz
+    [A2-A sub-a10 R=8 s0] ep   37/150  loss=0.09639
+    [A2-A sub-a10 R=8 s0] ep   74/150  loss=0.07431
+    [A2-A sub-a10 R=8 s0] ep  111/150  loss=0.05654
+    [A2-A sub-a10 R=8 s0] ep  148/150  loss=0.05643
+    [A2-A sub-a10 R=8 s0] ep  150/150  loss=0.05544
+    [A2-A sub-a10 R=8 s1] ep   37/150  loss=0.10272
+    [A2-A sub-a10 R=8 s1] ep   74/150  loss=0.07409
+    [A2-A sub-a10 R=8 s1] ep  111/150  loss=0.07001
+    [A2-A sub-a10 R=8 s1] ep  148/150  loss=0.06895
+    [A2-A sub-a10 R=8 s1] ep  150/150  loss=0.07308
+  A-sub-a10 R=8: ZF NRMSE=0.2080  A2=0.3516  A3=0.2805  A2-unmeas=0.9087  ρ=0.296
+    [A2-B sub-a10 R=8 s0] ep   37/150  loss=0.12791
+    [A2-B sub-a10 R=8 s0] ep   74/150  loss=0.10607
+    [A2-B sub-a10 R=8 s0] ep  111/150  loss=0.09452
+    [A2-B sub-a10 R=8 s0] ep  148/150  loss=0.09137
+    [A2-B sub-a10 R=8 s0] ep  150/150  loss=0.09048
+    [A2-B sub-a10 R=8 s1] ep   37/150  loss=0.10728
+    [A2-B sub-a10 R=8 s1] ep   74/150  loss=0.08583
+    [A2-B sub-a10 R=8 s1] ep  111/150  loss=0.07664
+    [A2-B sub-a10 R=8 s1] ep  148/150  loss=0.07688
+    [A2-B sub-a10 R=8 s1] ep  150/150  loss=0.07495
+  B-sub-a10 R=8: ZF NRMSE=0.2565  A2=0.2552  A3=0.7037  A2-unmeas=1.0348  ρ=0.255  Df_mean=1.4Hz
+
+─── BONUS: fmap ↔ Df correlation (R=4) ───
+    [Bonus-B sub-a09 R=4] ep   37/150  loss=0.17833
+    [Bonus-B sub-a09 R=4] ep   74/150  loss=0.11493
+    [Bonus-B sub-a09 R=4] ep  111/150  loss=0.10296
+    [Bonus-B sub-a09 R=4] ep  148/150  loss=0.09715
+    [Bonus-B sub-a09 R=4] ep  150/150  loss=0.09984
+  BONUS sub-a09 R=4: Spearman(A2-Df, fmap)=0.654  Spearman(ana-Df, fmap)=0.542  Pearson(A2-Df, fmap)=0.415
+    [Bonus-B sub-a10 R=4] ep   37/150  loss=0.13070
+    [Bonus-B sub-a10 R=4] ep   74/150  loss=0.11211
+    [Bonus-B sub-a10 R=4] ep  111/150  loss=0.09841
+    [Bonus-B sub-a10 R=4] ep  148/150  loss=0.09653
+    [Bonus-B sub-a10 R=4] ep  150/150  loss=0.09473
+  BONUS sub-a10 R=4: Spearman(A2-Df, fmap)=0.676  Spearman(ana-Df, fmap)=0.675  Pearson(A2-Df, fmap)=0.305
+
+══════════════════════════════════════════════════════════════════════════════════════════
+BRANCH A (magnitude, 10-echo MEGRE) — REPRO TABLES
+══════════════════════════════════════════════════════════════════════════════════════════
+
+  TABLE A — NRMSE (fg) [ref = FS echo-1 magnitude]
+    R        ZF        A2        A3
+  ───  ────────  ────────  ────────
+    2    0.1373    0.3739    0.3568
+    4    0.2018    0.3909    0.3835
+    8    0.2292    0.3958    0.4004
+
+  TABLE B — Texture fidelity (HF Pearson r)
+    R        ZF        A2        A3
+  ───  ────────  ────────  ────────
+    2    0.8961    0.4702    0.7253
+    4    0.7097    0.2605    0.5873
+    8    0.5778    0.1690    0.4899
+
+  TABLE C — k-space residuals (A2)
+    R    ZF-meas    ZF-unmeas    A2-meas    A2-unmeas    ratio
+  ───  ─────────  ───────────  ─────────  ───────────  ───────
+    2     0.2594       0.6328     0.6547       0.8481     1.30
+    4     0.2736       0.8359     0.6089       0.9168     1.51
+    8     0.2558       0.9015     0.5591       0.9277     1.66
+
+  TABLE D — A2 MC-uncertainty Spearman ρ
+    R    ρ(std,err)
+  ───  ────────────
+    2        0.1711
+    4        0.2746
+    8        0.2397
+
+  ─── REPRO CHECKS ───
+  CHECK 1 BOUNDARY:  DOES-NOT-REPRODUCE  (tex R=2→0.470 R=4→0.261 R=8→0.169)
+  CHECK 2 BLIND SPOT: PARTIAL  (unmeas/meas ratio=1.58 at R>2)
+  CHECK 3 ABSTENTION: PARTIAL  (mean Spearman ρ=0.2285)
+══════════════════════════════════════════════════════════════════════════════════════════
+
+══════════════════════════════════════════════════════════════════════════════════════════
+BRANCH B (complex, 3-echo sbref) — REPRO TABLES
+══════════════════════════════════════════════════════════════════════════════════════════
+
+  TABLE A — NRMSE (fg) [ref = FS echo-1 magnitude]
+    R        ZF        A2        A3
+  ───  ────────  ────────  ────────
+    2    0.2197    0.2120    0.6872
+    4    0.2435    0.2470    0.7092
+    8    0.2800    0.2647    0.7282
+
+  TABLE B — Texture fidelity (HF Pearson r)
+    R        ZF        A2        A3
+  ───  ────────  ────────  ────────
+    2    0.7733    0.5422   -0.1278
+    4    0.5884    0.3790   -0.0758
+    8    0.4364    0.2304   -0.0445
+
+  TABLE C — k-space residuals (A2)
+    R    ZF-meas    ZF-unmeas    A2-meas    A2-unmeas    ratio
+  ───  ─────────  ───────────  ─────────  ───────────  ───────
+    2     0.9093       1.1435     0.5568       0.8985     1.61
+    4     0.8777       1.0632     0.5025       0.9585     1.91
+    8     0.8491       1.0410     0.4689       1.0043     2.14
+
+  TABLE D — A2 MC-uncertainty Spearman ρ
+    R    ρ(std,err)
+  ───  ────────────
+    2        0.2858
+    4        0.2116
+    8        0.2454
+
+  ─── REPRO CHECKS ───
+  CHECK 1 BOUNDARY:  REPRODUCES  (tex R=2→0.542 R=4→0.379 R=8→0.230)
+  CHECK 2 BLIND SPOT: PARTIAL  (unmeas/meas ratio=2.02 at R>2)
+  CHECK 3 ABSTENTION: PARTIAL  (mean Spearman ρ=0.2476)
+══════════════════════════════════════════════════════════════════════════════════════════
+
+  BONUS fmap correlation: mean Spearman ρ(A2-Df, fmap) = 0.665
+  BONUS VERDICT: CORRELATES (ρ=0.665)
+  LIMITATION: Branch-B ΔTE≈17ms limits unambiguous Df to ±29Hz; fmap range wider.
+
+  Total data pulled: 0.000 GB  (0 bytes)
+  Total wall time: 0.6 min
+  → openneuro_a_repro.png
+  → openneuro_b_repro.png
+  → openneuro_fmap_correlation.png
+  → openneuro_repro.json
+
+════════════════════════════════════════════════════════════════════════════════
+SUMMARY
+════════════════════════════════════════════════════════════════════════════════
+  Branch A (magnitude, 10-echo MEGRE): CHECK1=DOES-NOT-REPRODUCE (R=2→0.470)  CHECK2=PARTIAL (ratio=1.58)  CHECK3=PARTIAL (ρ=0.2285)
+  Branch B (complex, 3-echo sbref): CHECK1=REPRODUCES (R=2→0.542)  CHECK2=PARTIAL (ratio=2.02)  CHECK3=PARTIAL (ρ=0.2476)
+  BONUS: CORRELATES
+  Data: 0.000 GB pulled from ds006926 (S3 REST API)
+════════════════════════════════════════════════════════════════════════════════
+
