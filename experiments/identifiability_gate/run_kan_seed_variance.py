@@ -73,7 +73,7 @@ class SmallKAN(nn.Module):
         return self.layer2(self.layer1(x))
 
 
-def train_one_seed(seed: int, hidden: int = KAN_HIDDEN) -> dict:
+def train_one_seed(seed: int, hidden: int = KAN_HIDDEN, grid: int = KAN_GRID) -> dict:
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
 
@@ -87,7 +87,7 @@ def train_one_seed(seed: int, hidden: int = KAN_HIDDEN) -> dict:
     Y_tr = torch.from_numpy(y_tr)
     Y_te = torch.from_numpy(y_te)
 
-    model = SmallKAN(in_dim=1, hidden=hidden, out_dim=1, grid=KAN_GRID, k=KAN_K)
+    model = SmallKAN(in_dim=1, hidden=hidden, out_dim=1, grid=grid, k=KAN_K)
 
     opt = torch.optim.Adam(model.parameters(), lr=KAN_LR)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=TRAIN_EPOCHS, eta_min=KAN_LR * 0.01)
