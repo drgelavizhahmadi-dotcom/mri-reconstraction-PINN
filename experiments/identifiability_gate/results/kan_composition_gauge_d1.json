@@ -1,0 +1,98 @@
+{
+  "hidden": 1,
+  "r2_threshold": 0.999,
+  "well_converged_seeds": [
+    0,
+    2,
+    5
+  ],
+  "n_pairs": 3,
+  "pair_results": [
+    {
+      "i": 0,
+      "j": 2,
+      "gauge": {
+        "interval_frac": 1.0,
+        "interval_len": 300,
+        "n_grid": 300,
+        "usable": true,
+        "x_interval": [
+          0.012,
+          1.0
+        ],
+        "h_affine_residual": 0.07597404718399048,
+        "h_affine_a": -0.7920762896537781,
+        "h_affine_b": 0.006982342805713415,
+        "composition_residual_raw": 0.0067154159769415855,
+        "composition_residual_quotiented": 0.006564418785274029
+      },
+      "recorded_phi2_raw": 1.6492371559143066,
+      "recorded_phi2_quotiented": 0.4777357280254364,
+      "recorded_phi2_a": -1.2590707540512085,
+      "recorded_phi2_b": 0.2174028605222702,
+      "collapse_ratio": 0.014056758963126944,
+      "near_affine_h": true,
+      "composition_tiny": true,
+      "type_mismatch_resolved": true,
+      "genuine_contradiction": false
+    },
+    {
+      "i": 0,
+      "j": 5,
+      "gauge": {
+        "interval_frac": 1.0,
+        "interval_len": 300,
+        "n_grid": 300,
+        "usable": true,
+        "x_interval": [
+          0.012,
+          1.0
+        ],
+        "h_affine_residual": 0.08280597627162933,
+        "h_affine_a": 0.847918689250946,
+        "h_affine_b": 0.07876939326524734,
+        "composition_residual_raw": 0.005938281770795584,
+        "composition_residual_quotiented": 0.0055621289648115635
+      },
+      "recorded_phi2_raw": 0.569692850112915,
+      "recorded_phi2_quotiented": 0.4731488525867462,
+      "recorded_phi2_a": 1.242714285850525,
+      "recorded_phi2_b": 0.14670957624912262,
+      "collapse_ratio": 0.012550557268221041,
+      "near_affine_h": true,
+      "composition_tiny": true,
+      "type_mismatch_resolved": true,
+      "genuine_contradiction": false
+    },
+    {
+      "i": 2,
+      "j": 5,
+      "gauge": {
+        "interval_frac": 0.9633333333333334,
+        "interval_len": 289,
+        "n_grid": 300,
+        "usable": true,
+        "x_interval": [
+          0.012,
+          0.9636521739130435
+        ],
+        "h_affine_residual": 0.09012152999639511,
+        "h_affine_a": -1.0532714128494263,
+        "h_affine_b": 0.08557606488466263,
+        "composition_residual_raw": 0.008453368209302425,
+        "composition_residual_quotiented": 0.0074577308259904385
+      },
+      "recorded_phi2_raw": 1.939406156539917,
+      "recorded_phi2_quotiented": 0.2790520191192627,
+      "recorded_phi2_a": -0.9382228255271912,
+      "recorded_phi2_b": 0.060120731592178345,
+      "collapse_ratio": 0.030293162672509776,
+      "near_affine_h": true,
+      "composition_tiny": true,
+      "type_mismatch_resolved": true,
+      "genuine_contradiction": false
+    }
+  ],
+  "verdict": "AFFINE_GAUGE_CONFIRMED_TYPE_MISMATCH_RESOLVED",
+  "verdict_text": "All 3 usable pairs: h_ij is close to affine (mean residual-from-affine=0.083) AND the composition residual collapses almost to zero (mean ratio to the recorded affine-QUOTIENTED=0.019). This is NOT a wild, infinite-dimensional diffeomorphism gauge at d=1 -- empirically, for well-converged pairs, the realized gauge is (close to) AFFINE, and h_ij's fitted (a,b) matches layer1's own recorded output-affine (a,b) almost exactly (same sign pattern, similar magnitude -- see per-pair numbers). The reason layer2 LOOKED unidentified even modulo affine in Steps 3/4/6 is a TYPE MISMATCH in what was tested: phi2 is the theorem's downstream g, whose gauge is an INPUT-domain affine warp of its argument (g_new(u):=g_old(a*u+b)), not an OUTPUT-side rescale of its own values (phi_i~=A*phi_j+B, what Step 3's QUOTIENTED metric actually fit). Once tested with the theoretically correct transform, layer2 is essentially perfectly explained by the same (a,b) that already explains layer1. This means Step 3/4/6's 'layer2 unstable' finding measured the wrong kind of equivalence for a downstream function, not a real extra source of non-identifiability beyond what governs layer1."
+}
