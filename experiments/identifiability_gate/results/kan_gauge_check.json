@@ -1,0 +1,86 @@
+{
+  "lambda_": 3.0,
+  "tolerance": 1e-05,
+  "n_eval_batch": 500,
+  "checkpoint": "checkpoints/kan_task_a_repro.pt",
+  "test_A_whole_edge": [
+    {
+      "edge_o": 0,
+      "spline_only": false,
+      "lam": 3.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "passes": true,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    },
+    {
+      "edge_o": 1,
+      "spline_only": false,
+      "lam": 3.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "passes": true,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    },
+    {
+      "edge_o": 2,
+      "spline_only": false,
+      "lam": 3.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "passes": true,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    },
+    {
+      "edge_o": 3,
+      "spline_only": false,
+      "lam": 3.0,
+      "max_abs_diff": 1.1920928955078125e-07,
+      "passes": true,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    }
+  ],
+  "test_B_spline_only": [
+    {
+      "edge_o": 0,
+      "spline_only": true,
+      "lam": 3.0,
+      "max_abs_diff": 0.04611077904701233,
+      "passes": false,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    },
+    {
+      "edge_o": 1,
+      "spline_only": true,
+      "lam": 3.0,
+      "max_abs_diff": 0.01049339771270752,
+      "passes": false,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    },
+    {
+      "edge_o": 2,
+      "spline_only": true,
+      "lam": 3.0,
+      "max_abs_diff": 0.027967870235443115,
+      "passes": false,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    },
+    {
+      "edge_o": 3,
+      "spline_only": true,
+      "lam": 3.0,
+      "max_abs_diff": 0.04490558058023453,
+      "passes": false,
+      "baseline_mean": 0.2334771603345871,
+      "baseline_std": 0.24073553085327148
+    }
+  ],
+  "test_A_all_pass": true,
+  "test_B_all_pass": false,
+  "verdict_A": "REAL, unconstrained gauge freedom at whole-edge granularity: outputs unchanged to <1e-5 when an edge's full function (base+spline) is scaled by \u03bb and layer2 is composed with 1/\u03bb. This is the literal theorem transform for this architecture (layer1 has in_dim=1, so edge \u2261 hidden unit; layer2 is exactly the downstream g, no normalization/residual in between).",
+  "verdict_B": "Spline-only scaling breaks output invariance under the same downstream correction: base(SiLU) and spline(B-spline) paths are summed within one edge but only one was rescaled, so they are NOT independently gauge-free. Edge-level gauge freedom in this hybrid architecture applies only to the WHOLE edge (base+spline together), never to the spline coefficients in isolation."
+}
