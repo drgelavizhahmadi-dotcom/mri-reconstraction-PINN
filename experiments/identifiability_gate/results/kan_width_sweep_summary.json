@@ -1,0 +1,68 @@
+{
+  "widths": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "rows": [
+    {
+      "hidden": 1,
+      "test_r2_min": 0.909598064460911,
+      "test_mse_mean": 0.0007971129794896115,
+      "raw_mean": 1.360785394700037,
+      "quot_mean": 0.4104002750789126,
+      "a_mean": -0.05596452752749125,
+      "a_std": 1.2657281356709562,
+      "converged": false
+    },
+    {
+      "hidden": 2,
+      "test_r2_min": 0.9878631696964087,
+      "test_mse_mean": 0.00013592902869277168,
+      "raw_mean": 1.2084317352208827,
+      "quot_mean": 0.4756181348115206,
+      "a_mean": 0.22781817787844275,
+      "a_std": 0.8542684174581127,
+      "converged": false
+    },
+    {
+      "hidden": 4,
+      "test_r2_min": 0.9996118451456388,
+      "test_mse_mean": 1.630398555789725e-05,
+      "raw_mean": 1.4245889659557078,
+      "quot_mean": 0.5397331210267212,
+      "a_mean": -0.029660146220380233,
+      "a_std": 0.7764813875917975,
+      "converged": true
+    },
+    {
+      "hidden": 8,
+      "test_r2_min": 0.9996561212337259,
+      "test_mse_mean": 9.879447907223948e-06,
+      "raw_mean": 1.4584212172983422,
+      "quot_mean": 0.6140950487719642,
+      "a_mean": -0.0034330970963411447,
+      "a_std": 0.6604321491123464,
+      "converged": true
+    }
+  ],
+  "prediction_holds": false,
+  "prediction_verdict": "PREDICTION FAILS: hidden=1 QUOTIENTED is still large (0.410); hidden=1 fitted a is still centered near zero (mean=-0.056, std=1.266). Redundancy across hidden units is NOT the (sole) mechanism -- even hidden=1, with no branches to trade mass between, shows edge instability. Something else (e.g. genuinely different spline/base-path solutions fitting the same function equally well within one edge) must be contributing.",
+  "not_converged_widths": [
+    1,
+    2
+  ]
+}

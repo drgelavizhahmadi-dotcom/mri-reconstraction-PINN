@@ -1,0 +1,111 @@
+{
+  "1": {
+    "n_seeds": 10,
+    "n_well_converged": 3,
+    "n_pairs_total": 45,
+    "n_pairs_kept": 3,
+    "underpowered": true,
+    "r2_threshold": 0.999,
+    "layer1_filtered": {
+      "raw": {
+        "mean": 1.3374299903710682,
+        "std": 0.8635413915785426,
+        "min": 0.12157055735588074,
+        "max": 2.0444555282592773,
+        "n": 3
+      },
+      "quotiented": {
+        "mean": 0.037424939374128975,
+        "std": 0.0032713459121457666,
+        "min": 0.032798562198877335,
+        "max": 0.03974376618862152,
+        "n": 3
+      },
+      "a": {
+        "mean": -0.3414451281229655,
+        "std": 1.0770019443807906,
+        "min": -1.2917585372924805,
+        "max": 1.1645258665084839,
+        "n": 3
+      }
+    },
+    "layer2_filtered": {
+      "raw": {
+        "mean": 1.3861120541890461,
+        "std": 0.5893243305228139,
+        "min": 0.569692850112915,
+        "max": 1.939406156539917,
+        "n": 3
+      },
+      "quotiented": {
+        "mean": 0.40997886657714844,
+        "std": 0.09259819795049244,
+        "min": 0.2790520191192627,
+        "max": 0.4777357280254364,
+        "n": 3
+      },
+      "a": {
+        "mean": -0.31819309790929157,
+        "std": 1.1114734196301395,
+        "min": -1.2590707540512085,
+        "max": 1.242714285850525,
+        "n": 3
+      }
+    }
+  },
+  "2": {
+    "n_seeds": 10,
+    "n_well_converged": 7,
+    "n_pairs_total": 45,
+    "n_pairs_kept": 21,
+    "underpowered": false,
+    "r2_threshold": 0.999,
+    "layer1_filtered": {
+      "raw": {
+        "mean": 0.8435154748814446,
+        "std": 0.7878012869154143,
+        "min": 0.1398504376411438,
+        "max": 2.8269851207733154,
+        "n": 42
+      },
+      "quotiented": {
+        "mean": 0.2076148415605227,
+        "std": 0.0833056101700494,
+        "min": 0.0823298841714859,
+        "max": 0.45575058460235596,
+        "n": 42
+      },
+      "a": {
+        "mean": 0.33672044177850086,
+        "std": 0.8032186712218516,
+        "min": -1.4693325757980347,
+        "max": 1.5641294717788696,
+        "n": 42
+      }
+    },
+    "layer2_filtered": {
+      "raw": {
+        "mean": 1.4244914310319083,
+        "std": 0.5669060051055165,
+        "min": 0.4350247383117676,
+        "max": 2.7282111644744873,
+        "n": 42
+      },
+      "quotiented": {
+        "mean": 0.6491628161498478,
+        "std": 0.20636562173828762,
+        "min": 0.3097038269042969,
+        "max": 0.9503810405731201,
+        "n": 42
+      },
+      "a": {
+        "mean": 0.16937770468315907,
+        "std": 0.39704039958717036,
+        "min": -0.7801191806793213,
+        "max": 0.8413132429122925,
+        "n": 42
+      }
+    }
+  },
+  "conclusion": "The convergence confound does NOT explain away the Step-4 instability for layer2 (hidden-unit -> output edges): it stays large even restricted to well-converged seed-pairs at both hidden=1 and hidden=2. layer1's very low filtered QUOTIENTED at hidden=1 (0.037) is suggestive of the redundancy story but rests on only 3 seed-pairs -- underpowered, not a reliable basis for a conclusion on its own. Net effect: PREDICTION FAILS stands, but specifically because of layer2 (and layer1's hidden=1 result is inconclusive, not confirmed-stable)."
+}

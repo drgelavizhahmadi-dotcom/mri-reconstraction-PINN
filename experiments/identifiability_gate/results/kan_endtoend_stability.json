@@ -1,0 +1,36 @@
+{
+  "hidden": 4,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "n_grid_pts": 300,
+  "x_domain": [
+    0.012,
+    1.0
+  ],
+  "u_scale": 4.0,
+  "seed_to_seed_spread": {
+    "mean": 0.010546106358783112,
+    "std": 0.0023207701182036736,
+    "min": 0.006124482955783606,
+    "max": 0.015449942089617252
+  },
+  "deviation_from_truth": {
+    "mean": 0.012967088125598634,
+    "std": 0.002083184847233258,
+    "min": 0.008656909082082139,
+    "max": 0.015718922504847986
+  },
+  "ratio_a_over_b": 0.8132979629521062,
+  "verdict": "A_ROUGHLY_EQUALS_B",
+  "verdict_text": "(a)=0.01055 ~ (b)=0.01297 (ratio=0.813): seed-to-seed agreement is not meaningfully tighter than each seed's agreement with the truth. 'Identified' adds nothing here beyond 'they all converged to a good fit' -- (a)'s smallness is fully explained by (b)'s smallness, not by any additional stability of the estimator itself."
+}

@@ -1,0 +1,59 @@
+{
+  "widths": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "representative_seed": 0,
+  "results": {
+    "1": {
+      "hidden": 1,
+      "test_r2": 0.9995869007939006,
+      "singular_values_normalized": [
+        1.0
+      ],
+      "effective_rank_1e2": 1,
+      "effective_rank_1e3": 1
+    },
+    "2": {
+      "hidden": 2,
+      "test_r2": 0.9997810285329336,
+      "singular_values_normalized": [
+        1.0,
+        0.2979258596897125
+      ],
+      "effective_rank_1e2": 2,
+      "effective_rank_1e3": 2
+    },
+    "4": {
+      "hidden": 4,
+      "test_r2": 0.9998036254223802,
+      "singular_values_normalized": [
+        1.0,
+        0.5039858222007751,
+        0.19861607253551483,
+        0.10241617262363434
+      ],
+      "effective_rank_1e2": 4,
+      "effective_rank_1e3": 4
+    },
+    "8": {
+      "hidden": 8,
+      "test_r2": 0.9997872659234339,
+      "singular_values_normalized": [
+        1.0,
+        0.36628419160842896,
+        0.2706046998500824,
+        0.22228538990020752,
+        0.1266862452030182,
+        0.08839543163776398,
+        0.058588676154613495,
+        0.02529248595237732
+      ],
+      "effective_rank_1e2": 8,
+      "effective_rank_1e3": 8
+    }
+  },
+  "reading_hidden4": "H is full rank at hidden=4 (threshold 1e-2): all 4 hidden units contribute independent directions. The 4-way decomposition is genuine in the sense that no single unit's activation pattern is redundant with another's -- edge instability across seeds is not explained by trivial rank-collapse."
+}

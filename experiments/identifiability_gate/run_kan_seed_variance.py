@@ -31,7 +31,6 @@ Usage:
 
 from __future__ import annotations
 
-import itertools
 import json
 import sys
 import time
@@ -41,6 +40,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from scipy.optimize import linear_sum_assignment
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_REPO_ROOT / "src"))
@@ -73,7 +73,7 @@ class SmallKAN(nn.Module):
         return self.layer2(self.layer1(x))
 
 
-def train_one_seed(seed: int) -> dict:
+def train_one_seed(seed: int, hidden: int = KAN_HIDDEN) -> dict:
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
 
@@ -87,7 +87,7 @@ def train_one_seed(seed: int) -> dict:
     Y_tr = torch.from_numpy(y_tr)
     Y_te = torch.from_numpy(y_te)
 
-    model = SmallKAN(in_dim=1, hidden=KAN_HIDDEN, out_dim=1, grid=KAN_GRID, k=KAN_K)
+    model = SmallKAN(in_dim=1, hidden=hidden, out_dim=1, grid=KAN_GRID, k=KAN_K)
 
     opt = torch.optim.Adam(model.parameters(), lr=KAN_LR)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=TRAIN_EPOCHS, eta_min=KAN_LR * 0.01)
@@ -112,7 +112,7 @@ def train_one_seed(seed: int) -> dict:
 
     # per-edge parameter norms (diagnostic for Step 3's "report WHAT mechanism")
     edge_norms = []
-    for o in range(KAN_HIDDEN):
+    for o in range(hidden):
         edge_norms.append(dict(
             edge_o=o,
             base_weight_abs=float(model.layer1.base_weight[o, 0].abs().item()),
@@ -147,11 +147,11 @@ def extract_layer1_edge(model: SmallKAN, edge_o: int, x_min: float, x_max: float
 
 
 def extract_layer2_edge(model: SmallKAN, edge_i: int, u_min: float, u_max: float,
-                         n_pts: int = N_EDGE_PTS) -> np.ndarray:
+                         hidden: int, n_pts: int = N_EDGE_PTS) -> np.ndarray:
     u_vals = torch.linspace(u_min, u_max, n_pts)
-    X = torch.zeros(n_pts, KAN_HIDDEN)
+    X = torch.zeros(n_pts, hidden)
     X[:, edge_i] = u_vals
-    X0 = torch.zeros(1, KAN_HIDDEN)
+    X0 = torch.zeros(1, hidden)
     with torch.no_grad():
         y_full = model.layer2(X)[:, 0].numpy()
         y_base = model.layer2(X0)[0, 0].item()
@@ -183,21 +183,25 @@ def permutation_matched_comparison(edges_by_index: dict, pair_idx: list) -> dict
     permutation of hidden-unit indices minimizing total QUOTIENTED residual, and
     report RAW/QUOTIENTED under that best alignment instead of the identity one.
     """
+    # Best permutation = a min-cost perfect matching (assignment problem), solved
+    # exactly via the Hungarian algorithm in O(n^3) -- NOT brute force over all n!
+    # permutations, which is intractable past ~n=6 (n=8 -> 40320 perms/pair).
     edge_keys = sorted(edges_by_index.keys())
     n_edges = len(edge_keys)
-    perms = list(itertools.permutations(range(n_edges)))
 
     pair_results = []
     for i, j in pair_idx:
-        best_perm, best_cost, best_detail = None, np.inf, None
-        for perm in perms:
-            detail = [raw_and_quotiented(edges_by_index[edge_keys[k]][i],
-                                          edges_by_index[edge_keys[perm[k]]][j])
-                      for k in range(n_edges)]
-            cost = sum(d["quotiented"] for d in detail)
-            if cost < best_cost:
-                best_cost, best_perm, best_detail = cost, perm, detail
-        pair_results.append(dict(i=i, j=j, perm=list(best_perm), per_unit=best_detail))
+        cost = np.zeros((n_edges, n_edges))
+        detail_matrix = [[None] * n_edges for _ in range(n_edges)]
+        for k in range(n_edges):
+            for l in range(n_edges):
+                d = raw_and_quotiented(edges_by_index[edge_keys[k]][i], edges_by_index[edge_keys[l]][j])
+                detail_matrix[k][l] = d
+                cost[k, l] = d["quotiented"]
+        row_ind, col_ind = linear_sum_assignment(cost)
+        best_perm = [int(x) for x in col_ind]
+        best_detail = [detail_matrix[k][col_ind[k]] for k in range(n_edges)]
+        pair_results.append(dict(i=i, j=j, perm=best_perm, per_unit=best_detail))
 
     all_raw = [d["raw"] for p in pair_results for d in p["per_unit"]]
     all_quot = [d["quotiented"] for p in pair_results for d in p["per_unit"]]
@@ -213,20 +217,31 @@ def summarize(values: list[float]) -> dict:
     return dict(mean=float(arr.mean()), std=float(arr.std()), min=float(arr.min()), max=float(arr.max()))
 
 
-def main() -> None:
+def run_seed_variance(hidden: int = KAN_HIDDEN, seeds: list[int] | None = None,
+                       save: bool = True, verbose: bool = True) -> dict:
+    """Steps 2-3, parametrized by hidden width. Same metrics code as the original
+    hidden=4 run (raw_and_quotiented, permutation_matched_comparison, summarize) --
+    reused verbatim, not reimplemented, so width-sweep numbers are comparable."""
+    seeds = list(range(N_SEEDS)) if seeds is None else seeds
+    n_seeds = len(seeds)
+
+    def log(msg: str) -> None:
+        if verbose:
+            print(msg)
+
     t0 = time.time()
-    print(f"Training {N_SEEDS} seeds of Task-A SmallKAN "
-          f"(seeds={SEEDS}, epochs={TRAIN_EPOCHS} each, full-batch, CPU)...")
+    log(f"Training {n_seeds} seeds of Task-A SmallKAN (hidden={hidden}) "
+        f"(seeds={seeds}, epochs={TRAIN_EPOCHS} each, full-batch, CPU)...")
 
     runs = []
-    for s in SEEDS:
-        r = train_one_seed(s)
+    for s in seeds:
+        r = train_one_seed(s, hidden=hidden)
         runs.append(r)
-        print(f"  seed={s:2d}  final_train_loss={r['final_train_loss']:.3e}  "
-              f"test_mse={r['test_mse']:.3e}  test_r2={r['test_r2']:.6f}")
+        log(f"  seed={s:2d}  final_train_loss={r['final_train_loss']:.3e}  "
+            f"test_mse={r['test_mse']:.3e}  test_r2={r['test_r2']:.6f}")
 
     elapsed = time.time() - t0
-    print(f"Trained {N_SEEDS} seeds in {elapsed:.1f}s")
+    log(f"Trained {n_seeds} seeds in {elapsed:.1f}s")
 
     # ── STEP 2: convergence check ──────────────────────────────────────────
     train_losses = [r["final_train_loss"] for r in runs]
@@ -243,17 +258,17 @@ def main() -> None:
     # seeds reached a comparably good fit.
     converged_comparable = r2_summary["min"] > 0.999
 
-    print(f"\n=== STEP 2: convergence across {N_SEEDS} seeds ===")
-    print(f"  final train loss: mean={train_summary['mean']:.3e} std={train_summary['std']:.3e} "
-          f"CV={train_cv:.3f}")
-    print(f"  test MSE:         mean={test_summary['mean']:.3e} std={test_summary['std']:.3e} "
-          f"CV={test_cv:.3f}")
-    print(f"  test R^2:         mean={r2_summary['mean']:.6f} std={r2_summary['std']:.6f} "
-          f"min={r2_summary['min']:.6f}")
-    print(f"  Comparable (min test R^2 > 0.999): {converged_comparable}  "
-          f"[MSE-CV={train_cv:.3f} exceeds a naive {CONVERGENCE_CV_THRESHOLD} threshold, but at "
-          f"this loss magnitude relative MSE variation is not a meaningful non-convergence signal "
-          f"on its own -- R^2 is the fit-quality check that matters here]")
+    log(f"\n=== STEP 2: convergence across {n_seeds} seeds (hidden={hidden}) ===")
+    log(f"  final train loss: mean={train_summary['mean']:.3e} std={train_summary['std']:.3e} "
+        f"CV={train_cv:.3f}")
+    log(f"  test MSE:         mean={test_summary['mean']:.3e} std={test_summary['std']:.3e} "
+        f"CV={test_cv:.3f}")
+    log(f"  test R^2:         mean={r2_summary['mean']:.6f} std={r2_summary['std']:.6f} "
+        f"min={r2_summary['min']:.6f}")
+    log(f"  Comparable (min test R^2 > 0.999): {converged_comparable}  "
+        f"[MSE-CV={train_cv:.3f} exceeds a naive {CONVERGENCE_CV_THRESHOLD} threshold, but at "
+        f"this loss magnitude relative MSE variation is not a meaningful non-convergence signal "
+        f"on its own -- R^2 is the fit-quality check that matters here]")
 
     # ── STEP 3: pairwise curve comparison ──────────────────────────────────
     x_min, x_max = 0.012, 1.0     # layer1 input domain, matches Task A's KAN input range
@@ -262,12 +277,12 @@ def main() -> None:
                                    # across seeds even though raw hidden-unit scales differ
 
     layer1_edges = {o: [extract_layer1_edge(r["model"], o, x_min, x_max) for r in runs]
-                     for o in range(KAN_HIDDEN)}
-    layer2_edges = {i: [extract_layer2_edge(r["model"], i, u_min, u_max) for r in runs]
-                     for i in range(KAN_HIDDEN)}
+                     for o in range(hidden)}
+    layer2_edges = {i: [extract_layer2_edge(r["model"], i, u_min, u_max, hidden=hidden) for r in runs]
+                     for i in range(hidden)}
     full_model_curves = [extract_full_model(r["model"], x_min, x_max) for r in runs]
 
-    pair_idx = [(i, j) for i in range(N_SEEDS) for j in range(N_SEEDS) if i < j]
+    pair_idx = [(i, j) for i in range(n_seeds) for j in range(n_seeds) if i < j]
 
     def compare_all_edges(edges_by_index: dict) -> dict:
         per_edge = {}
@@ -305,50 +320,50 @@ def main() -> None:
     overall_quot = summarize([p["quotiented"] for e in list(layer1_results.values()) + list(layer2_results.values())
                                for p in e["pairs"]])
 
-    print(f"\n=== STEP 3: layer1 edges (input -> hidden unit), {len(pair_idx)} pairs each ===")
-    for o in range(KAN_HIDDEN):
+    log(f"\n=== STEP 3: layer1 edges (input -> hidden unit), {len(pair_idx)} pairs each ===")
+    for o in range(hidden):
         rs = layer1_results[o]["raw_summary"]
         qs = layer1_results[o]["quotiented_summary"]
         asum = layer1_results[o]["a_summary"]
-        print(f"  edge o={o}: RAW mean={rs['mean']:.3f} std={rs['std']:.3f}  |  "
-              f"QUOTIENTED mean={qs['mean']:.3f} std={qs['std']:.3f}  |  a mean={asum['mean']:.3f} "
-              f"std={asum['std']:.3f}")
+        log(f"  edge o={o}: RAW mean={rs['mean']:.3f} std={rs['std']:.3f}  |  "
+            f"QUOTIENTED mean={qs['mean']:.3f} std={qs['std']:.3f}  |  a mean={asum['mean']:.3f} "
+            f"std={asum['std']:.3f}")
 
-    print(f"\n=== STEP 3: layer2 edges (hidden unit -> output), {len(pair_idx)} pairs each ===")
-    for i in range(KAN_HIDDEN):
+    log(f"\n=== STEP 3: layer2 edges (hidden unit -> output), {len(pair_idx)} pairs each ===")
+    for i in range(hidden):
         rs = layer2_results[i]["raw_summary"]
         qs = layer2_results[i]["quotiented_summary"]
         asum = layer2_results[i]["a_summary"]
-        print(f"  edge i={i}: RAW mean={rs['mean']:.3f} std={rs['std']:.3f}  |  "
-              f"QUOTIENTED mean={qs['mean']:.3f} std={qs['std']:.3f}  |  a mean={asum['mean']:.3f} "
-              f"std={asum['std']:.3f}")
+        log(f"  edge i={i}: RAW mean={rs['mean']:.3f} std={rs['std']:.3f}  |  "
+            f"QUOTIENTED mean={qs['mean']:.3f} std={qs['std']:.3f}  |  a mean={asum['mean']:.3f} "
+            f"std={asum['std']:.3f}")
 
     full_model_pairs = [raw_and_quotiented(full_model_curves[i], full_model_curves[j])
                          for i, j in pair_idx]
     full_model_raw = summarize([p["raw"] for p in full_model_pairs])
     full_model_quot = summarize([p["quotiented"] for p in full_model_pairs])
-    print(f"\n=== SANITY CHECK: full end-to-end model(x) curve across seeds "
-          f"(the object Finding 5's r=0.9997 claim is actually about) ===")
-    print(f"  RAW mean={full_model_raw['mean']:.4f} std={full_model_raw['std']:.4f}  |  "
-          f"QUOTIENTED mean={full_model_quot['mean']:.4f} std={full_model_quot['std']:.4f}  "
-          f"(all seeds directly loss-constrained to ~exp(-u); expected far more stable than "
-          f"any internal edge decomposition)")
+    log(f"\n=== SANITY CHECK: full end-to-end model(x) curve across seeds "
+        f"(the object Finding 5's r=0.9997 claim is actually about) ===")
+    log(f"  RAW mean={full_model_raw['mean']:.4f} std={full_model_raw['std']:.4f}  |  "
+        f"QUOTIENTED mean={full_model_quot['mean']:.4f} std={full_model_quot['std']:.4f}  "
+        f"(all seeds directly loss-constrained to ~exp(-u); expected far more stable than "
+        f"any internal edge decomposition)")
 
-    print(f"\n=== AGGREGATE (naive same-index alignment) ===")
-    print(f"  layer1: RAW mean={layer1_agg['raw']['mean']:.3f}  QUOTIENTED mean={layer1_agg['quotiented']['mean']:.3f}")
-    print(f"  layer2: RAW mean={layer2_agg['raw']['mean']:.3f}  QUOTIENTED mean={layer2_agg['quotiented']['mean']:.3f}")
-    print(f"  overall: RAW mean={overall_raw['mean']:.3f}  QUOTIENTED mean={overall_quot['mean']:.3f}")
+    log(f"\n=== AGGREGATE (naive same-index alignment) ===")
+    log(f"  layer1: RAW mean={layer1_agg['raw']['mean']:.3f}  QUOTIENTED mean={layer1_agg['quotiented']['mean']:.3f}")
+    log(f"  layer2: RAW mean={layer2_agg['raw']['mean']:.3f}  QUOTIENTED mean={layer2_agg['quotiented']['mean']:.3f}")
+    log(f"  overall: RAW mean={overall_raw['mean']:.3f}  QUOTIENTED mean={overall_quot['mean']:.3f}")
 
-    print(f"\n=== PERMUTATION-MATCHED comparison (hidden units are also permutation-symmetric; "
-          f"is naive same-index alignment the confound?) ===")
-    print(f"  layer1: RAW mean={layer1_perm_matched['raw']['mean']:.3f}  "
-          f"QUOTIENTED mean={layer1_perm_matched['quotiented']['mean']:.3f}  "
-          f"(naive QUOTIENTED was {layer1_agg['quotiented']['mean']:.3f})  "
-          f"frac_pairs_identity_perm={layer1_perm_matched['frac_pairs_matching_identity_perm']:.2f}")
-    print(f"  layer2: RAW mean={layer2_perm_matched['raw']['mean']:.3f}  "
-          f"QUOTIENTED mean={layer2_perm_matched['quotiented']['mean']:.3f}  "
-          f"(naive QUOTIENTED was {layer2_agg['quotiented']['mean']:.3f})  "
-          f"frac_pairs_identity_perm={layer2_perm_matched['frac_pairs_matching_identity_perm']:.2f}")
+    log(f"\n=== PERMUTATION-MATCHED comparison (hidden units are also permutation-symmetric; "
+        f"is naive same-index alignment the confound?) ===")
+    log(f"  layer1: RAW mean={layer1_perm_matched['raw']['mean']:.3f}  "
+        f"QUOTIENTED mean={layer1_perm_matched['quotiented']['mean']:.3f}  "
+        f"(naive QUOTIENTED was {layer1_agg['quotiented']['mean']:.3f})  "
+        f"frac_pairs_identity_perm={layer1_perm_matched['frac_pairs_matching_identity_perm']:.2f}")
+    log(f"  layer2: RAW mean={layer2_perm_matched['raw']['mean']:.3f}  "
+        f"QUOTIENTED mean={layer2_perm_matched['quotiented']['mean']:.3f}  "
+        f"(naive QUOTIENTED was {layer2_agg['quotiented']['mean']:.3f})  "
+        f"frac_pairs_identity_perm={layer2_perm_matched['frac_pairs_matching_identity_perm']:.2f}")
 
     RAW_SMALL_THRESHOLD = 0.10
     QUOT_SMALL_THRESHOLD = 0.10
@@ -399,14 +414,13 @@ def main() -> None:
                              f"NOT_IDENTIFIED stands even after accounting for hidden-unit "
                              f"relabeling.")
 
-    print(f"\nVERDICT: {verdict}")
-    print(f"  {verdict_text}")
-    print(f"\nPERMUTATION CAVEAT: {permutation_note}")
+    log(f"\nVERDICT: {verdict}")
+    log(f"  {verdict_text}")
+    log(f"\nPERMUTATION CAVEAT: {permutation_note}")
 
-    RESULTS_DIR.mkdir(exist_ok=True, parents=True)
     out = dict(
-        n_seeds=N_SEEDS, seeds=SEEDS,
-        train_epochs=TRAIN_EPOCHS, lr=KAN_LR, grid=KAN_GRID, spline_order=KAN_K, hidden=KAN_HIDDEN,
+        hidden=hidden, n_seeds=n_seeds, seeds=seeds,
+        train_epochs=TRAIN_EPOCHS, lr=KAN_LR, grid=KAN_GRID, spline_order=KAN_K,
         deviation_note=("Full-batch training has no data-loader shuffle order to vary; varied "
                          "weight init AND the random draw of the train/test sample together per "
                          "seed via the same integer seed instead."),
@@ -436,9 +450,20 @@ def main() -> None:
         verdict_text=verdict_text,
         wall_time_seconds=elapsed,
     )
-    with open(RESULTS_DIR / "kan_seed_variance.json", "w") as f:
-        json.dump(out, f, indent=2)
-    print(f"\n  → {RESULTS_DIR / 'kan_seed_variance.json'}")
+
+    if save:
+        RESULTS_DIR.mkdir(exist_ok=True, parents=True)
+        out_path = RESULTS_DIR / (f"kan_seed_variance.json" if hidden == KAN_HIDDEN
+                                   else f"kan_seed_variance_hidden{hidden}.json")
+        with open(out_path, "w") as f:
+            json.dump(out, f, indent=2)
+        log(f"\n  → {out_path}")
+
+    return out
+
+
+def main() -> None:
+    run_seed_variance(hidden=KAN_HIDDEN, seeds=SEEDS)
 
 
 if __name__ == "__main__":

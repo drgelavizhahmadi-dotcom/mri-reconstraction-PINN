@@ -1,4 +1,5 @@
 {
+  "hidden": 4,
   "n_seeds": 10,
   "seeds": [
     0,
@@ -16,7 +17,6 @@
   "lr": 0.003,
   "grid": 12,
   "spline_order": 3,
-  "hidden": 4,
   "deviation_note": "Full-batch training has no data-loader shuffle order to vary; varied weight init AND the random draw of the train/test sample together per seed via the same integer seed instead.",
   "convergence": {
     "train_loss": {
@@ -6050,5 +6050,5 @@
   },
   "verdict": "NOT_IDENTIFIED",
   "verdict_text": "RAW large, QUOTIENTED large: components are not identified even modulo affine (scale+shift) transforms. Finding 5 does not hold as written; independently trained seeds are learning genuinely different functions, not just differently-scaled copies of the same one.",
-  "wall_time_seconds": 79.32933497428894
+  "wall_time_seconds": 80.33733201026917
 }
