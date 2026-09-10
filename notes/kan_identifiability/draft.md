@@ -41,6 +41,23 @@ recomputed by `build_note.py` from the per-pair `p` and `c` values in `kan_multi
 (@ `b08948b`), giving **+0.9533**. Traceable to committed data, but derived at build time rather
 than at experiment time.
 
+**D4 — the premise of the selection check (§6.8) does not match the files.** The check was
+motivated as: "Step 8 filtered pairs on `phi1` being strictly monotone and retained 3 of 21
+possible pairs from 7 converged seeds, so ~86% were rejected [by the monotonicity filter]." The
+files say:
+
+- The d=1 (`hidden=1`, `grid=12`) run had **3** of 10 seeds pass `R² > 0.999`
+  (`kan_seed_variance_hidden1.json` @ `0b902c6`), giving **3** candidate pairs, not 21. Seven
+  converged seeds is the **d≥2** run.
+- The monotonicity/invertibility requirement rejected **nothing**. All 3 candidate pairs were
+  usable (interval fractions 1.00, 1.00, 0.96; `kan_composition_gauge_d1.json` @ `0174759`), and
+  when the gauge test was run over all 45 pairs with no convergence filter, **45/45 were usable**
+  (`kan_grid_confound.json` @ `0b9c1d3`, `grid=12`).
+
+So inversion-based selection did not operate at all. The selection that *did* operate is the
+**convergence filter**, which excludes 42 of 45 pairs — a stronger selection than the one
+hypothesized. §6.8 tests that instead, and the result is positive; see §6.8 and Limitation 7.
+
 ---
 
 ## 1. Title and abstract
@@ -122,16 +139,62 @@ The multiplicative node reuses the same edge machinery, replacing the sum with a
 product is not degenerate at initialization. Its factors `psi_j` are read out directly from the
 layer rather than by marginal sweep (see §5.4).
 
+### 3.4 Fibers, completeness, and what is being measured
+
+We use the vocabulary of the parameter-space-symmetry literature (see §10.1, TODO-VERIFY):
+
+- The **fiber** over a function `f` is the set of parameter vectors that realize `f` — every
+  distinct way the network can be written down while computing the same input–output map.
+- A group `G` acting on parameter space is **complete** for an architecture when it acts
+  **transitively** on the fiber: any two parameter vectors realizing the same function are related
+  by some `g ∈ G`, i.e. no hidden symmetries remain outside `G`.
+
+Completeness is settled for some classical architectures — Gaussian RBF networks up to permutation
+(Kůrková & Neruda), tanh feedforward networks up to permutation and sign-flip (Sussmann); see
+§10.1, statements TODO-VERIFY. **KANs are not on that list**, and that gap is what this note
+addresses empirically.
+
+**Every experiment below is a transitivity test.** Two independently trained seeds that fit the
+same target are two points which, if training has converged, sit in (approximately) the same fiber.
+For a candidate group `G` we ask: does some `g ∈ G` carry one seed's components onto the other's?
+Operationally, we quotient by `G` and measure the residual. Small residual ⇒ `G` acts transitively
+on the realized fiber for that node type; large residual ⇒ it does not, and either `G` is too small
+or the two points were not in one fiber to begin with.
+
+Two scope conditions follow, and both matter for reading the results:
+
+1. This measures the **realized** fiber — the part of the fiber that ten training runs actually
+   reach — not the theoretical fiber. A negative transitivity result is evidence about training
+   dynamics as much as about the group (Limitation 8).
+2. Fiber membership requires the two networks to compute the same function. A seed that did not
+   converge is not in the fiber, so conditioning on convergence is a precondition for the question
+   to be well posed, not an optional filter. §6.8 measures what that conditioning costs.
+
 ---
 
-## 4. Gauge structure
+## 4. Candidate symmetry groups by node type
 
-<!-- TODO(author): theorem statements. The composition identity, the additive/affine result,
-     the multiplicative/power result, and whatever centering/normalization conditions you state. -->
+<!-- TODO(author): statements. Which group is the candidate for each node type, the composition
+     identity, and whatever centering/normalization conditions you state. -->
 
-> **TODO — author: theorem statements and proofs.**
+> **TODO — author: statements and proofs.**
 
-### 4.1 Mechanical verification of exact invariance
+### 4.1 Provenance of the candidate groups (not novel)
+
+The candidate groups tested here are classical and are **not claimed as new mathematics**. For a
+multiplicative node the maps that preserve multiplicative separability are those satisfying
+`h(uv) = h(u)h(v)`; for continuous `h` on the positive reals the solutions are exactly the power
+maps `h(u) = u^c`. This is the multiplicative Cauchy functional equation.
+
+> **TODO-VERIFY — citation.** Aczél, *Functional Equations and Their Applications* (1966) — edition
+> and page not confirmed in this session. Pinkus, *Ridge Functions* (2015) is reported to index the
+> same equation; also unconfirmed. See §10.2.
+
+The note's contribution is therefore not the group but the **completeness study**: taking the
+classically-known candidate group for each node type and measuring whether it acts transitively on
+the realized fiber of trained KANs.
+
+### 4.2 Mechanical verification of exact invariance
 
 Independent of any theorem, the following two facts about the implemented layer were verified
 numerically on a trained checkpoint (`kan_gauge_check.json` @ `5845298`; `lambda = 3.0`,
@@ -220,6 +283,11 @@ flat step or a sign flip both count as a break, no smoothing), its extent is rep
 retaining under 10% of the grid is skipped rather than forced. For the power fit, a pair retaining
 under 30% of the domain is declared inconclusive rather than counted either way.
 
+One further quantity was pre-registered and is **not** reported as a result: a reciprocal-torus
+test on the multiplicative prefactors (`c_1·c_2` pinned within a pair). It is not identifiable
+as posed — with the outer `g` free, any prefactor product is absorbed downstream, and the
+fitted prefactor is in any case slaved to the exponent (§6.6d). No prefactor result is given.
+
 ### 5.6 Matching, filtering, and reproducibility
 
 - **Hidden-unit permutation matching.** Hidden units are exchangeable, so same-index comparison
@@ -242,7 +310,25 @@ under 30% of the domain is declared inconclusive rather than counted either way.
 
 ## 6. Results
 
-### 6.1 Additive nodes at d≥2 are stable modulo a shared affine map
+Each subsection is a transitivity test in the sense of §3.4: a candidate group, the residual left
+after quotienting by it, and a verdict on whether it acts transitively on the realized fiber.
+
+| § | node type / object | candidate group | residual after quotient | verdict |
+|---|---|---|---|---|
+| 6.1 | additive node, d≥2, layer1 edges | affine (shared across the node's edges) | 0.0030 / 0.0113 | **transitive** on the realized fiber |
+| 6.2 | additive node, d≥2, outer `g` | affine acting on `g`'s **input domain**, propagated from layer1, 0 free params | 0.0245 | **transitive** |
+| 6.2 | same, but tested with an output-side rescale | affine acting on `g`'s **output** | 0.5977 | not transitive — wrong group |
+| 6.3 | d=1 vs d≥2, form of the map | affine vs unrestricted invertible | cost of forcing affine: 5.91× (d=1), 0.98× (d≥2) | affine transitive at d≥2; **not** at d=1 |
+| 6.5 | d=1 node | affine | h-vs-affine 0.0830 | **partial** — near-affine but not affine |
+| 6.6 | multiplicative node | power maps `u^c` | 0.0042 (vs 0.0324 affine) | **transitive**; affine is the `p≈1` subgroup and is not |
+| 6.7 | end-to-end map | — | — | vacuous, see §6.7 |
+| 6.8 | d=1, selection control | — | — | d=1 verdicts hold only on the converged subset |
+
+### 6.1 Additive nodes at d≥2: the affine group acts transitively
+
+**Candidate group:** a single affine map `u ↦ a·u + b` acting on the node's aggregated
+pre-activation, which by additivity acts on each edge as `psi_j ↦ a·psi_j + b/d`.
+**Test:** quotient each edge by a two-parameter affine map and measure what remains.
 
 <!-- tables/T1_additive_d2_layer1.md -- source kan_multivariate.json @ 0174759 -->
 
@@ -263,7 +349,11 @@ here is a transform-type artifact, not instability.
 
 Note the fitted slope `a` is wide-spread (SD ≈ 1.2) and centered near zero. That is not an absence
 of relationship: each pair has its own tight affine relation, and different pairs sit at different
-points along the orbit. §6.3 separates these two readings.
+points along the orbit — which is what an unconstrained group parameter looks like, not what a
+failure of transitivity looks like. §6.3 separates these two readings.
+
+**Verdict: transitive.** Residual 0.0030 / 0.0113 after quotienting by the affine group; the group
+carries one seed's layer1 edges onto another's.
 
 **Figure F2** (`figures/F2_d2_edges_shared_affine.png`) shows this directly: raw edges scatter in
 amplitude and sign; after fitting a per-seed affine map **on the x1-edge alone**, both the x1-edge
@@ -271,9 +361,12 @@ and the x2-edge collapse onto a single curve.
 
 ### 6.2 Layer2 predicted from layer1 with zero free parameters
 
-Layer2 is the outer function `g`. Its gauge is a transformation of its **input domain**
-(`g_new(u) = g_old(a·u+b)`), not a rescaling of its output values (`A·g(u)+B`). Testing it with the
-latter is a category error and produces the 0.5977 in T1.
+**Candidate group:** the same affine map, now acting on the outer function `g`. Because `g`
+consumes the node's aggregate, the group acts on `g`'s **input domain**
+(`g_new(u) = g_old(a·u+b)`), not by rescaling `g`'s output values (`A·g(u)+B`). Testing with the
+latter asks whether the wrong group is transitive, and produces the 0.5977 in T1.
+
+**Test:** take `(a,b)` from layer1 and *predict* layer2 with no free parameters.
 
 <!-- tables/T2_layer2_zero_free_parameters.md -- source kan_step10_audit.json @ 8e8ab7a -->
 
@@ -290,12 +383,17 @@ At d≥2, propagating layer1's fitted `(a,b)` into layer2 with **no free paramet
 0.0245 — indistinguishable from the exact numerical reparameterization (0.0251), and a factor of
 24 below the output-affine number. The 2-parameter best case (0.0050) is the floor, not the claim.
 
+**Verdict: transitive**, with the group acting on the input domain. The same group element that
+relates the two seeds' layer1 edges also relates their outer functions, which is what it means for
+one group to act on the whole parameter vector rather than on each layer separately.
+
 ### 6.3 The exact-vs-affine gap
 
+**Candidate groups compared:** the unrestricted invertible maps versus their affine subgroup.
 Because `derived-exact` uses the true numerical `h` and `propagated-(a,b)` forces that `h` to be
-affine, the ratio between them measures how far the realized reparameterization is from affine —
-without depending on the absolute residual scale, and so without inheriting d=1's small pair count
-in the way a single residual does.
+affine, the ratio between them measures how much transitivity is lost by shrinking the group to
+affine — without depending on the absolute residual scale, and so without inheriting d=1's small
+pair count in the way a single residual does.
 
 <!-- tables/T3_exact_vs_affine_gap.md -- source kan_step10_audit.json @ 8e8ab7a -->
 
@@ -308,10 +406,16 @@ in the way a single residual does.
 
 Forcing `h` to be affine costs a factor of ~6 at d=1 and nothing at d≥2.
 
+**Verdict:** at d≥2 the affine subgroup is already transitive — nothing is gained by enlarging it.
+At d=1 it is not: the realized reparameterization sits outside the affine subgroup by a factor of
+six, so affine is incomplete there and some larger group is required.
+
 ### 6.4 The shared scale is shared to ~1%
 
-Both layer1 edges of a d≥2 node feed the same aggregation, so a single scalar acting on the node's
-pre-activation should move both edges identically.
+**What this tests:** whether the group element is a property of the *node* rather than fitted
+per-edge. Both layer1 edges feed one aggregation, so a single scalar acting on the node's
+pre-activation must move both edges identically. If the two edges' fitted scale factors agreed only
+loosely, the "group" would be a per-edge curve-fitting artifact rather than a symmetry.
 
 <!-- tables/T4_shared_scale_effect_size.md -- source kan_step10_audit.json @ 8e8ab7a -->
 
@@ -330,6 +434,9 @@ pre-activation should move both edges identically.
 
 The two edges agree on their scale factor to about 1% while that factor itself ranges over roughly
 `[-2.6, +2.3]` across pairs — a 143× separation between the within-pair and across-pair scales.
+
+**Verdict:** the group element is shared at node level, as a symmetry requires. Its wide spread
+across pairs is the group parameter being unconstrained, not evidence against the group.
 
 ### 6.5 h-vs-affine across regimes, and how much the filter matters
 
@@ -354,6 +461,11 @@ The d≥2 result does not depend on where the bar sits. Dropping only the two ge
 ### 6.6 Multiplicative nodes: a power gauge
 
 <!-- tables/T6_multiplicative_power_gauge.md -- source kan_multiplicative.json @ b08948b -->
+
+**Candidate group:** the power maps `h(u) = u^c`, i.e. the continuous solutions of the
+multiplicative Cauchy equation (§4.1; classical, not novel). The affine group is *not* the
+candidate here: it is the `p = 1` slice of the power group, so the two are nested and the
+comparison below is between a group and its subgroup, not between a right and a wrong answer.
 
 **T6.** `MultKAN[2→1→1]`, target `exp(-x1)·sin(pi*x2)`. 8 well-converged seeds / 28 pairs / 56
 edge-fits, **0 inconclusive** — 100% of the domain was retained on every pair, i.e. the learned
@@ -393,19 +505,90 @@ stays flat to within a factor of 4 (0.0019 → 0.0077), so the power advantage g
 | observed range of p | [-3.246, 2.404] |
 
 The exponent is shared by a node's two edges to 1.35% while ranging over `[-3.25, +2.40]` across
-pairs — the structural analogue of the shared-scale result in T4.
+pairs — the structural analogue of the shared-scale result in T4, and the same node-level
+signature: one group element per node, not one per edge.
+
+**Verdict: the power group acts transitively** (residual 0.0042); its affine subgroup does not
+(0.0324 overall, 0.0738 where `|p−1| ≥ 1`). Transitivity is recovered exactly by enlarging the
+group from affine to power.
 
 **(d) Prefactors.** `corr(p, log|c1|) = +0.9533`: the fitted prefactor is largely determined by the
 exponent rather than being an independent coordinate. See §5.5 and the methods note on the
 pre-registered torus test.
 
-### 6.7 The end-to-end map
+### 6.7 The end-to-end map is not a transitivity result
 
 Cross-seed agreement of the full input–output map is 0.01055, and each seed's distance from the
 true target is 0.01297 — a ratio of 0.813 (`kan_endtoend_stability.json` @ `0b902c6`). Seeds
 therefore agree with each other no more tightly than any of them agrees with the truth, so
 "the end-to-end map is identified" adds nothing beyond "training converged" and is not reported as
 a finding.
+
+### 6.8 Selection check: what conditioning on convergence costs at d=1
+
+Every d=1 verdict above rests on 3 of 45 possible pairs. If the excluded pairs were excluded
+*because* their components were badly behaved, and badly-behaved components are exactly where a
+non-affine reparameterization would show up, then "near-affine at d=1" would be an artifact of the
+selection rather than a property of the realized fiber. Discretization is already ruled out (§7),
+so selection is the leading remaining candidate.
+
+Two facts first (see D4). The invertibility requirement selected **nothing**: all 45 pairs are
+invertible-usable at this configuration. The selection that operated is the **convergence filter**,
+which excludes 42 of 45 pairs. To measure it, we use a divergence that needs no inverse and is
+therefore computable on every pair, excluded ones included:
+
+```
+D_ij = min over affine (a,b) of || phi1_i - (a*phi1_j + b) || / || phi1_i ||
+```
+
+`D` is exactly the QUOTIENTED metric of §5.5 applied to layer1, so it is already committed for all
+45 pairs and no retraining or regeneration was required.
+
+<!-- tables/T9_selection_check_d1.md -- source kan_selection_check.json -->
+
+**T9.** d=1 (`d=1, hidden=1, grid=12`). Converged seeds [0, 2, 5] (3/10), so 3 of 45 pairs are retained. `D` is computable on every pair (no inverse required), so nothing is unmeasurable.
+
+**(a) Why each pair is in or out.** The invertibility requirement rejected **nothing**: 45/45 pairs are invertible-usable. Every exclusion is the convergence filter.
+
+| pair status | count |
+| --- | --- |
+| convergence filter | 42 |
+| retained | 3 |
+| **total pairs** | 45 |
+
+**(b) Retained vs excluded**
+
+| metric | retained mean | retained median | retained range | excluded mean | excluded median | excluded range | excl./ret. |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| D — inversion-free affine divergence of `phi1` | 0.0374 | 0.0397 | [0.0328, 0.0397] | 0.1703 | 0.0717 | [0.0161, 0.8884] | 4.55× |
+| h-vs-affine — inversion-based | 0.0830 | — | [0.0760, 0.0901] | 0.2602 | — | [0.0184, 0.8954] | 3.14× |
+
+Mann–Whitney `U = 17` of 126, `U/U_max = 0.135` (0.5 would be no separation; → 0 means retained pairs are systematically less divergent).
+
+**Verdict: SELECTION_CONDITIONS_THE_RESULT.** Excluded pairs are systematically more divergent than retained ones (D mean 0.1703 vs 0.0374, 4.55x; U/U_max=0.135). The near-affine d=1 result is conditioned on selection and every d=1 claim must be reported as holding only on the converged subset.
+
+**Reading this.** The separation is real and large, and every d=1 statement in this note must be
+read as holding on the converged subset only. Two qualifications keep it accurate:
+
+- The separation is **distributional, not a threshold**. The excluded set is bimodal (F5): part of
+  it overlaps the retained range, and its minimum (`D = 0.0161`) is *below* every retained pair
+  (retained range `[0.0328, 0.0397]`). So it is not true that the retained pairs are the three
+  mildest. What is true is that the median excluded pair (`0.0717`) is roughly twice the most
+  divergent retained pair, and the excluded set has a long tail to `0.8884` with nothing comparable
+  among the survivors.
+- The retained spread is measured on **3 points**, so its narrowness (SD 0.0033) carries almost no
+  information on its own.
+
+There is a second, non-exculpatory reading that does not remove the caveat but does bear on
+interpretation: a transitivity question is only well posed between parameter vectors in the **same
+fiber**, i.e. computing the same function (§3.4). Seed 6 at `R² = 0.910` is not in the fiber, so
+including it would not measure the group's failure to be transitive — it would measure that the two
+networks compute different functions. On that reading, conditioning on convergence is a
+precondition rather than a bias. Both readings are compatible with the numbers, and the note does
+not attempt to adjudicate between them; what is not in doubt is that the d=1 sample is small and
+drawn from the mild tail.
+
+---
 
 ---
 
@@ -482,6 +665,22 @@ target.
    free, a prefactor product is absorbable downstream, and the fitted prefactor is in any case
    slaved to the exponent (`r = +0.95`). No prefactor result is reported.
 
+7. **The d=1 results are conditioned on selection, measurably.** Excluding pairs by the convergence
+   filter removes 42 of 45 pairs, and the 3 survivors sit at the mild end of the divergence
+   distribution: mean `D` 0.0374 retained vs 0.1703 excluded, a factor of 4.55 (Mann–Whitney
+   `U/U_max = 0.135`). §6.8. Every d=1 verdict — the near-affine `h`, the 5.91× exact-vs-affine
+   gap, the 32.7× d=1/d≥2 contrast — holds on the converged subset and is not established for
+   the d=1 fiber at large. Note the invertibility requirement itself selected nothing (45/45 pairs
+   usable), so this is convergence selection, not inversion selection.
+
+8. **This studies the realized fiber, not the theoretical one.** Everything measured here concerns
+   the part of the fiber that ten training runs actually reach under one optimizer and schedule. A
+   negative transitivity result is therefore evidence about training dynamics as much as about the
+   candidate group: a group could be complete in theory while training never realizes the orbit
+   elements that would demonstrate it, and conversely a group could look transitive here simply
+   because training concentrates on a small, well-behaved region of the fiber. No claim about the
+   theoretical fiber is made anywhere in this note.
+
 ---
 
 ## 10. Related work
@@ -489,22 +688,56 @@ target.
 <!-- TODO(author): positioning and critique. -->
 
 > **TODO — author.**
-
-### 10.1 Relation to Liu, Chatzi & Lai (arXiv 2509.19830)
-
-> **TODO-VERIFY — factual summary not written.** I could not verify the contents of this paper from
-> the repository or from any source available in this session, and per the constraint against
-> inventing citations I have not written summaries of Theorems 1–2, Proposition 1, Corollaries 1–2,
-> or the authors' stated open problem on component recovery. The only characterization of it
-> present anywhere in this project's history is a one-line remark, made in conversation and not
-> independently checked here, that **Proposition 1 claims identifiability under a centering
-> condition**. Treat even that as unverified.
 >
-> To complete: obtain the paper, and fill in (i) the statements of Thms 1–2, Prop 1, Cors 1–2, and
+> Every subsection below contains bibliographic placeholders only. I have not read these sources in
+> this session and have deliberately written **no** summaries of what they contain — per the
+> constraint against summarizing unread work, the correct output is a pointer, not a paraphrase.
+
+### 10.1 Parameter-space symmetry and completeness — TODO-VERIFY
+
+The vocabulary used in §3.4 (fiber, transitivity, completeness) is taken from this literature.
+
+| ref | placeholder | to verify |
+|---|---|---|
+| arXiv 2506.13018 | "Symmetry in Neural Network Parameter Spaces" | full author list, year, venue; the definitions of fiber / transitive action / completeness as actually stated |
+| Sussmann 1992 | completeness for tanh feedforward nets, reported as up to permutation and sign-flip | exact statement, hypotheses (architecture, width, activation), full citation |
+| Kůrková & Neruda 1994 | completeness for Gaussian RBF nets, reported as up to permutation | exact statement, hypotheses, full citation |
+
+The claim in §3.4 that "KANs are not on that list" rests on these three being the state of the art
+for completeness results — **TODO-VERIFY**; I have not confirmed that no KAN completeness result
+exists.
+
+### 10.2 Ridge-function uniqueness — TODO-VERIFY
+
+| ref | placeholder | to verify |
+|---|---|---|
+| Pinkus, *Ridge Functions* (2015) | Ch. 3 "Uniqueness", Ch. 4 "Identifying Functions and Directions" | chapter titles/numbering; whether the multiplicative Cauchy equation is indexed there as reported in §4.1 |
+| Buhmann & Pinkus 1999 | — | full citation, statement |
+| Pinkus 2013 | Indag. Math. **24**, 725–738 | volume/pages, statement |
+| Aczél 1966 | *Functional Equations and Their Applications* — source for `h(uv)=h(u)h(v) ⇒ h(u)=u^c` (§4.1) | edition and page; this is the citation §4.1 depends on |
+
+### 10.3 Identifiability constraints in spline superposition models — TODO-VERIFY
+
+| ref | placeholder | to verify |
+|---|---|---|
+| Coppejans 2005 | monotone inner splines imposed for statistical identifiability | full citation, the exact constraint imposed and what it buys |
+
+This one is worth checking against §5.5: the monotonicity requirement there is a *measurement*
+convenience for inverting `phi1`, not an identifiability constraint imposed during training. Whether
+those two uses of monotonicity are related is **TODO-VERIFY**.
+
+### 10.4 Relation to Liu, Chatzi & Lai (arXiv 2509.19830) — TODO-VERIFY
+
+> **Not written.** I could not verify the contents of this paper from the repository or from any
+> source available in this session, and per the constraint against inventing citations I have not
+> written summaries of Theorems 1–2, Proposition 1, Corollaries 1–2, or the authors' stated open
+> problem on component recovery. The only characterization of it anywhere in this project's history
+> is a one-line remark, made in conversation and not independently checked, that **Proposition 1
+> claims identifiability under a centering condition**. Treat even that as unverified.
+>
+> To complete: obtain the paper and fill in (i) the statements of Thms 1–2, Prop 1, Cors 1–2, and
 > (ii) their stated open problem on component recovery. Factual summary only — critique belongs in
 > the author-written portion above.
-
----
 
 ## Appendix A. Convergence census
 
@@ -536,6 +769,7 @@ labelled.
 | F2 | `figures/F2_d2_edges_shared_affine.png` | d≥2 layer1 edges across seeds, raw (left) and after a per-seed affine map fitted **on the x1-edge only** (right). The x2-edge panel uses that same transform, so its collapse is a prediction, not a fit. |
 | F3 | `figures/F3_power_stratification.png` | Multiplicative node: affine and power residuals per edge-fit against `\|p−1\|`, plus stratified means with the power advantage annotated. |
 | F4 | `figures/F4_convergence_census.png` | Test `R²` per seed for every configuration, filter line drawn, failing seeds labelled. |
+| F5 | `figures/F5_selection_check_d1.png` | d=1 selection check: inversion-free divergence `D` for all 45 pairs, retained vs excluded, per-pair and as distributions. |
 
 ## Appendix C. Provenance
 
@@ -551,6 +785,7 @@ commit that introduced it in an HTML comment header. Commit map:
 | `kan_step10_audit.json`, `kan_step10b_sensitivity.json` | `8e8ab7a` |
 | `kan_multiplicative.json` | `b08948b` |
 | `kan_grid_sweep.json`, `kan_grid_confound.json` | `0b9c1d3` |
+| `kan_selection_check.json` | this commit |
 
 Rebuild with:
 

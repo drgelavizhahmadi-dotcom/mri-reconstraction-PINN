@@ -275,6 +275,43 @@ def t8() -> None:
                           "h-vs-affine (matched band)", "n pairs (band)"]))
 
 
+def t9() -> None:
+    s = load("kan_selection_check")
+    dr, de = s["D_retained"], s["D_excluded"]
+    hr, he = s["h_retained"], s["h_excluded"]
+    cen = s["rejection_reason_counts"]
+    census = md([[k, str(v)] for k, v in sorted(cen.items())] +
+                [["**total pairs**", str(s["n_pairs_total"])]],
+                ["pair status", "count"])
+    stats = md([["D — inversion-free affine divergence of `phi1`",
+                 f"{dr['mean']:.4f}", f"{dr['median']:.4f}", f"[{dr['min']:.4f}, {dr['max']:.4f}]",
+                 f"{de['mean']:.4f}", f"{de['median']:.4f}", f"[{de['min']:.4f}, {de['max']:.4f}]",
+                 f"{s['D_inflation_excluded_over_retained']:.2f}×"],
+                ["h-vs-affine — inversion-based",
+                 f"{hr['mean']:.4f}", "—", f"[{hr['min']:.4f}, {hr['max']:.4f}]",
+                 f"{he['mean']:.4f}", "—", f"[{he['min']:.4f}, {he['max']:.4f}]",
+                 f"{s['h_inflation_excluded_over_retained']:.2f}×"]],
+               ["metric", "retained mean", "retained median", "retained range",
+                "excluded mean", "excluded median", "excluded range", "excl./ret."])
+    write_table("T9_selection_check_d1.md",
+                ["kan_selection_check", "kan_seed_variance_hidden1", "kan_grid_confound",
+                 "kan_composition_gauge_d1"],
+                "T9. Selection check on the d=1 pairs",
+                [f"**T9.** d=1 (`{s['config']}`). Converged seeds "
+                 f"{s['converged_seeds']} ({len(s['converged_seeds'])}/10), so 3 of "
+                 f"{s['n_pairs_total']} pairs are retained. `D` is computable on every pair "
+                 f"(no inverse required), so nothing is unmeasurable.", "",
+                 "**(a) Why each pair is in or out.** The invertibility requirement rejected "
+                 f"**nothing**: {s['n_usable_invertible']}/{s['n_pairs_total']} pairs are "
+                 "invertible-usable. Every exclusion is the convergence filter.", ""] + census +
+                ["", "**(b) Retained vs excluded**", ""] + stats +
+                ["", f"Mann–Whitney `U = {s['mann_whitney_U']:.0f}` of "
+                 f"{s['mann_whitney_U_max']:.0f}, `U/U_max = {s['mann_whitney_ratio']:.3f}` "
+                 f"(0.5 would be no separation; → 0 means retained pairs are systematically less "
+                 f"divergent).", "",
+                 f"**Verdict: {s['verdict']}.** {s['verdict_text']}"])
+
+
 # ──────────────────────────────── figures ───────────────────────────────────
 
 def f1() -> None:
@@ -415,6 +452,37 @@ def check_draft() -> int:
     return bad
 
 
+def f5() -> None:
+    s = load("kan_selection_check")
+    retained = {tuple(p) for p in s["retained_pairs"]}
+    D = {tuple(int(x) for x in k.split("-")): v for k, v in s["D_all"].items()}
+    ret = [D[p] for p in D if p in retained]
+    exc = [D[p] for p in D if p not in retained]
+
+    fig, ax = plt.subplots(1, 2, figsize=(12, 4.6))
+    rng = np.random.default_rng(0)
+    for i, (vals, lbl, col) in enumerate([(ret, f"retained (n={len(ret)})", "tab:green"),
+                                           (exc, f"excluded (n={len(exc)})", "tab:red")]):
+        ax[0].scatter(np.full(len(vals), i) + rng.uniform(-.09, .09, len(vals)), vals,
+                      c=col, s=40, alpha=.8, zorder=3, label=lbl)
+        ax[0].hlines(np.mean(vals), i - .25, i + .25, color="k", lw=2, zorder=4)
+    ax[0].set_xticks([0, 1]); ax[0].set_xticklabels(["retained", "excluded"])
+    ax[0].set_yscale("log"); ax[0].set_ylabel("D  (inversion-free affine divergence)")
+    ax[0].set_title("per pair (black bar = mean)"); ax[0].grid(alpha=.25); ax[0].legend(fontsize=8)
+
+    bins = np.logspace(np.log10(min(ret + exc)), np.log10(max(ret + exc)), 22)
+    ax[1].hist(exc, bins=bins, alpha=.65, color="tab:red", label=f"excluded (n={len(exc)})")
+    ax[1].hist(ret, bins=bins, alpha=.85, color="tab:green", label=f"retained (n={len(ret)})")
+    ax[1].set_xscale("log"); ax[1].set_xlabel("D"); ax[1].set_ylabel("pairs")
+    ax[1].set_title("distribution"); ax[1].grid(alpha=.25); ax[1].legend(fontsize=8)
+    fig.suptitle("F5. d=1 selection check: excluded pairs are systematically more divergent "
+                 f"({s['D_inflation_excluded_over_retained']:.2f}× in mean)")
+    fig.tight_layout()
+    fig.savefig(FIG / "F5_selection_check_d1.png", dpi=130)
+    plt.close(fig)
+    print("  wrote figures/F5_selection_check_d1.png")
+
+
 def main() -> None:
     TAB.mkdir(parents=True, exist_ok=True)
     (FIG / "data").mkdir(parents=True, exist_ok=True)
@@ -422,10 +490,10 @@ def main() -> None:
         print("checking draft.md against tables/:")
         raise SystemExit(1 if check_draft() else 0)
     print("tables:")
-    for fn in (t1, t2, t3, t4, t5, t6, t7, t8):
+    for fn in (t1, t2, t3, t4, t5, t6, t7, t8, t9):
         fn()
     print("figures:")
-    for fn in (f1, f2, f3, f4):
+    for fn in (f1, f2, f3, f4, f5):
         fn()
     print("consistency:")
     check_draft()
